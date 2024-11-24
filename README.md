@@ -6,7 +6,13 @@ Movie critic application. Rate and keep track of what movies and shows you have 
 
 ### Docker
 
-TBD
+You can install the entire application's stack using the following command:
+
+```bash
+docker compose up --build -d
+```
+
+After that you should have a web app running at `http://localhost:8000`
 
 ### Source
 
