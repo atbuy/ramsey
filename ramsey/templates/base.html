@@ -7,10 +7,15 @@
     <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
     <link href="/static/css/main.css" rel="stylesheet">
 
+    <!-- TailwindCSS  -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
     {% block head %}
     {% endblock %}
   </head>
-  <body>
+  <body class="bg-stone-800 text-white">
+
+    {% include "./navbar.html" %}
 
     {% block body %}
     {% endblock %}
