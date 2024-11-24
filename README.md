@@ -13,12 +13,17 @@ TBD
 If you only plan on using the application you can install using the following command:
 
 ```bash
-pip install .
+make install
 ```
 
 Otherwise if you want to develop the application should use:
 
 ```bash
-pip install -e '.[dev]'
-pre-commit install
+make install-all
+```
+
+To run the application you can simply use:
+
+```bash
+make run
 ```
