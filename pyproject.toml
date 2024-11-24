@@ -1,0 +1,21 @@
+[project]
+name = "ramsey"
+version = "0.1.0"
+authors = [{ name = "atbuy", email = "buy@atbuy.dev" }]
+description = "My package description"
+readme = "README.md"
+requires-python = ">=3.12"
+keywords = ["movie", "critic", "rating"]
+license = { file = "LICENSE" }
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pre-commit==4.0.1", "ruff==0.8.0"]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
