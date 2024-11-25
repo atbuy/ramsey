@@ -1,16 +1,5 @@
 <div class="flex flex-wrap flex-col justify-evenly items-start">
-  {% for result in results %}
-    <div class="flex items-start justify-start p-2 mr-3">
-      <img src="{{ result.image }}" width="50px" height="100px" class="rounded-lg mr-4">
-      <div class="flex flex-col justify-start">
-        <span class="font-semibold">{{ result.title }}</span>
-        {% if result.year %}
-          <span class="text-gray-400">{{ result.year }}</span>
-        {% else %}
-          <span class="text-gray-400">unknown year</span>
-        {% endif %}
-        <span class="text-gray-400">{{ result.people }}</span>
-      </div>
-    </div>
+  {% for movie in results %}
+    {% include "./components/movie.html" %}
   {% endfor %}
 </div>

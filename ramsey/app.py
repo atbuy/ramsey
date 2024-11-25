@@ -31,7 +31,15 @@ redis = get_redis()
 async def home(request: Request):
     """Show index page."""
 
-    return templates.TemplateResponse(request, "index.html")
+    # Get all searched movies and display them
+    cached = redis.get(settings.redis.data_key) or "{}"
+    data = json.loads(cached)
+    movies = data.get("movies", {})
+
+    watched = [movie[0] for movie in movies.values()]
+    context = {"watched": watched}
+
+    return templates.TemplateResponse(request, "index.html", context)
 
 
 @app.post("/search")
@@ -51,15 +59,18 @@ async def search(request: Request, query: SearchQuery):
     # Check if there are data cached
     cached = redis.get(settings.redis.data_key) or "{}"
     data = json.loads(cached)
-    if not data:
+    movies = data.get("movies", {})
+    results = movies.get(query.search, [])
+
+    # Check if there are data
+    if not data or not results:
         # Parse results and render the template with the data
         results = search_query(query.search)
 
         # Store result data in cache
-        data[query.search] = results
+        movies[query.search] = results
+        data["movies"] = movies
         redis.set(settings.redis.data_key, json.dumps(data))
-    else:
-        results = data[query.search]
 
     context = {"results": results}
     render = templates.TemplateResponse(
