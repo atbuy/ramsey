@@ -4,3 +4,6 @@
 .python-version
 pyrightconfig.json
 build
+
+# Environment configuration
+.env*
