@@ -1,4 +1,5 @@
 import json
+import time
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -6,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from ramsey.cache import get_redis
-from ramsey.models import SearchQuery
+from ramsey.models import APISaveMovie, SearchQuery
 from ramsey.parsing import search_query
 from ramsey.settings import get_settings
 
@@ -36,8 +37,8 @@ async def home(request: Request):
     data = json.loads(cached)
     movies = data.get("movies", {})
 
-    watched = [movie[0] for movie in movies.values()]
-    context = {"watched": watched}
+    watched = [movie for movie in movies.values()]
+    context = {"watched": watched, "in_index": True}
 
     return templates.TemplateResponse(request, "index.html", context)
 
@@ -59,7 +60,7 @@ async def search(request: Request, query: SearchQuery):
     # Check if there are data cached
     cached = redis.get(settings.redis.data_key) or "{}"
     data = json.loads(cached)
-    movies = data.get("movies", {})
+    movies = data.get("searches", {})
     results = movies.get(query.search, [])
 
     # Check if there are data
@@ -69,7 +70,7 @@ async def search(request: Request, query: SearchQuery):
 
         # Store result data in cache
         movies[query.search] = results
-        data["movies"] = movies
+        data["searches"] = movies
         redis.set(settings.redis.data_key, json.dumps(data))
 
     context = {"results": results}
@@ -80,3 +81,32 @@ async def search(request: Request, query: SearchQuery):
     )
 
     return render
+
+
+@app.post("/api/save-movie")
+async def api_save_movie(movie: APISaveMovie):
+    """Store watched movie in redis."""
+
+    # Get movie data from JSON payload
+    title, year, people, image = movie.identifier.split("@$@")
+
+    # Get current stored movies with their identifiers
+    cached = redis.get(settings.redis.data_key) or "{}"
+    data = json.loads(cached)
+    movies = data.get("movies", {})
+
+    # Store movie by identifier
+    movies[movie.identifier] = {
+        "title": title,
+        "year": year,
+        "people": people,
+        "image": image,
+        # Extra metadata
+        "stored_at": time.time(),
+        "times_watched": 1,
+    }
+
+    data["movies"] = movies
+    redis.set(settings.redis.data_key, json.dumps(data))
+
+    return {"status": 200, "message": "OK"}

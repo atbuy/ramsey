@@ -1,17 +1,20 @@
-<div class="flex items-start justify-start p-2 mr-3">
-  <img
-    src="{{ movie.image }}"
-    width="50px"
-    height="100px"
-    class="rounded-lg mr-4"
-  />
-  <div class="flex flex-col justify-start">
-    <span class="font-semibold">{{ movie.title }}</span>
-    {% if movie.year %}
-    <span class="text-gray-400">{{ movie.year }}</span>
-    {% else %}
-    <span class="text-gray-400">unknown year</span>
-    {% endif %}
-    <span class="text-gray-400">{{ movie.people }}</span>
+<div class="flex flex-col px-4">
+  <div class="flex items-start justify-start p-2 mr-auto">
+    <img src="{{ movie.image }}" width="50px" height="100px" class="rounded-lg mr-4" />
+    <div class="flex flex-col justify-start">
+      <span class="font-semibold">{{ movie.title }}</span>
+      {% if movie.year %}
+      <span class="text-gray-400">{{ movie.year }}</span>
+      {% else %}
+      <span class="text-gray-400">unknown year</span>
+      {% endif %}
+      <span class="text-gray-400">{{ movie.people }}</span>
+    </div>
   </div>
+
+  {% if in_index %}
+  <div class="flex flex-col flex-wrap text-gray-400">
+    Times Watched: {{ movie.times_watched }}
+  </div>
+  {% endif %}
 </div>

@@ -31,7 +31,12 @@ packages = ["ramsey"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-ramsey = ["static/css/*", "static/images/*", "templates/*", "templates/components/*"]
+ramsey = [
+  "static/images/*",
+  "static/js/*",
+  "templates/*",
+  "templates/components/*",
+]
 
 [build-system]
 requires = ["setuptools"]

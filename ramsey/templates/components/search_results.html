@@ -1,5 +1,14 @@
 <div class="flex flex-wrap flex-col justify-evenly items-start">
   {% for movie in results %}
+  <div class="flex rounded-md border-gray-400 border-2 mb-3" style="min-width: 500px">
     {% include "./components/movie.html" %}
+    <button onclick="storeMovieResult('{{ movie.title }}@$@{{ movie.year }}@$@{{ movie.people }}@$@{{ movie.image }}')"
+      class="flex items-center justify-center px-5 bg-gray-400">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="25px" height="25px" fill="white">
+        <path
+          d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-144 0 0-144z" />
+      </svg>
+    </button>
+  </div>
   {% endfor %}
 </div>
