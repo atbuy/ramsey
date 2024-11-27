@@ -7,3 +7,8 @@ class SearchQuery(BaseModel):
 
 class APISaveMovie(BaseModel):
     identifier: str
+
+
+class APIUpdateMovie(BaseModel):
+    identifier: str
+    action: str

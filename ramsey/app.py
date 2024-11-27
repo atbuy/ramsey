@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from ramsey.cache import get_redis
-from ramsey.models import APISaveMovie, SearchQuery
+from ramsey.models import APISaveMovie, APIUpdateMovie, SearchQuery
 from ramsey.parsing import search_query
 from ramsey.settings import get_settings
 
@@ -102,6 +102,7 @@ async def api_save_movie(movie: APISaveMovie):
         "people": people,
         "image": image,
         # Extra metadata
+        "identifier": movie.identifier,
         "stored_at": time.time(),
         "times_watched": 1,
     }
@@ -110,3 +111,37 @@ async def api_save_movie(movie: APISaveMovie):
     redis.set(settings.redis.data_key, json.dumps(data))
 
     return {"status": 200, "message": "OK"}
+
+
+@app.patch("/api/update-movie")
+async def api_update_movie(movie: APIUpdateMovie):
+    """Update movie watched time."""
+
+    # Get current stored movies with their identifiers
+    cached = redis.get(settings.redis.data_key) or "{}"
+    data = json.loads(cached)
+    movies = data.get("movies", {})
+
+    watched = movies[movie.identifier]["times_watched"]
+    new_amount = watched
+
+    if movie.action == "inc":
+        movies[movie.identifier]["times_watched"] += 1
+        new_amount += 1
+    elif movie.action == "dec" and watched > 1:
+        movies[movie.identifier]["times_watched"] -= 1
+        new_amount -= 1
+    else:
+        movies.pop(movie.identifier)
+        new_amount = 0
+
+    data["movies"] = movies
+    redis.set(settings.redis.data_key, json.dumps(data))
+
+    response = {
+        "status": 200,
+        "message": "OK",
+        "data": {"new_amount": new_amount},
+    }
+
+    return response

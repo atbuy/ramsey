@@ -14,7 +14,27 @@
 
   {% if in_index %}
   <div class="flex flex-col flex-wrap text-gray-400">
-    Times Watched: {{ movie.times_watched }}
+    <div class="flex items-center justify-start">
+      <div>
+        <span>Times Watched:</span>
+        <span id="watched-{{ movie.identifier }}">{{ movie.times_watched }}</span>
+      </div>
+      <div class="flex items-center justify-start">
+        <button onclick="updateWatched('{{ movie.identifier }}', 'inc')"
+          class="border border-green-300 rounded-md p-2 mx-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="10px" height="10px" style="fill: white">
+            <path
+              d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-144 0 0-144z" />
+          </svg>
+        </button>
+        <button onclick="updateWatched('{{ movie.identifier }}', 'dec')" class="border border-red-300 rounded-md p-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="10px" height="10px" style="fill: white">
+            <path
+              d="M432 256c0 17.7-14.3 32-32 32L48 288c-17.7 0-32-14.3-32-32s14.3-32 32-32l352 0c17.7 0 32 14.3 32 32z" />
+          </svg>
+        </button>
+      </div>
+    </div>
   </div>
   {% endif %}
 </div>
