@@ -41,6 +41,23 @@ def static_url(path: str) -> str:
 
 templates.env.globals["static_url"] = static_url
 
+# Human labels for the title types of the suggestion API
+TYPE_LABELS = {
+    "movie": "Movie",
+    "tvSeries": "Series",
+    "tvMiniSeries": "Mini-series",
+    "tvMovie": "TV movie",
+    "tvSpecial": "TV special",
+    "short": "Short",
+    "video": "Video",
+    "musicVideo": "Music video",
+    "videoGame": "Game",
+}
+templates.env.globals["kind"] = TYPE_LABELS.get
+
+TYPE_FILTERS = ("all", "movies", "shows")
+SORTS = ("watched", "rating", "times", "title")
+
 # Initialize redis connection
 redis = get_redis()
 
@@ -49,12 +66,41 @@ def format_date(timestamp: float) -> str:
     return datetime.fromtimestamp(timestamp).strftime("%b %d, %Y")
 
 
-def library_context() -> dict:
+def library_prefs(request: Request) -> tuple[str, str]:
+    """Get the active library filter and sort, from the query or cookies."""
+
+    type_filter = request.query_params.get("type") or request.cookies.get(
+        "library-type"
+    )
+    sort = request.query_params.get("sort") or request.cookies.get("library-sort")
+
+    if type_filter not in TYPE_FILTERS:
+        type_filter = "all"
+    if sort not in SORTS:
+        sort = "watched"
+
+    return type_filter, sort
+
+
+def matches_filter(movie: dict, type_filter: str) -> bool:
+    if type_filter == "movies":
+        return movie["type"] == "movie"
+    if type_filter == "shows":
+        return str(movie["type"] or "").startswith("tv")
+    return True
+
+
+def library_context(request: Request) -> dict:
     """Split all movies into the watched list and the watchlist."""
+
+    type_filter, sort = library_prefs(request)
 
     watched = []
     watchlist = []
     for movie in db.get_movies():
+        if not matches_filter(movie, type_filter):
+            continue
+
         dates = movie.pop("watch_dates")
         movie["times_watched"] = len(dates)
         if dates:
@@ -65,13 +111,26 @@ def library_context() -> dict:
             movie["added"] = format_date(movie["added_at"])
             watchlist.append(movie)
 
-    return {"watched": watched, "watchlist": watchlist}
+    # The default "watched" order comes sorted from the database already
+    if sort == "rating":
+        watched.sort(key=lambda movie: movie["rating"] or 0, reverse=True)
+    elif sort == "times":
+        watched.sort(key=lambda movie: movie["times_watched"], reverse=True)
+    elif sort == "title":
+        watched.sort(key=lambda movie: movie["title"].lower())
+
+    return {
+        "watched": watched,
+        "watchlist": watchlist,
+        "type_filter": type_filter,
+        "sort": sort,
+    }
 
 
-def render_library(oob: bool = False) -> str:
+def render_library(request: Request, oob: bool = False) -> str:
     """Render the library fragment, swapped in after every change."""
 
-    context = library_context() | {"oob": oob}
+    context = library_context(request) | {"oob": oob}
     return templates.get_template("components/library.html").render(context)
 
 
@@ -100,9 +159,9 @@ def respond(request: Request, movie_id: str | None = None):
         detail = ""
         if movie_id and db.get_movie(movie_id) is not None:
             detail = render_detail(movie_id)
-        return HTMLResponse(detail + render_library(oob=True))
+        return HTMLResponse(detail + render_library(request, oob=True))
 
-    return HTMLResponse(render_library())
+    return HTMLResponse(render_library(request))
 
 
 def month_buckets(count: int = 12) -> list[tuple[int, int]]:
@@ -190,7 +249,20 @@ def stats_context() -> dict:
 async def home(request: Request):
     """Show index page."""
 
-    return templates.TemplateResponse(request, "index.html", library_context())
+    return templates.TemplateResponse(request, "index.html", library_context(request))
+
+
+@app.get("/library")
+async def library(request: Request):
+    """Render the library with the given filter and sort, and remember them."""
+
+    type_filter, sort = library_prefs(request)
+
+    response = HTMLResponse(render_library(request))
+    response.set_cookie("library-type", type_filter, max_age=60 * 60 * 24 * 365)
+    response.set_cookie("library-sort", sort, max_age=60 * 60 * 24 * 365)
+
+    return response
 
 
 @app.get("/stats")

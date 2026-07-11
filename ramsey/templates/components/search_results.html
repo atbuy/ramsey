@@ -7,6 +7,8 @@
     <div class="flex flex-col min-w-0 flex-1">
       <span class="font-display text-ink truncate">{{ movie.title }}</span>
       <span class="text-muted text-sm truncate">
+        {% set label = kind(movie.type) %}
+        {% if label %}{{ label }} &middot; {% endif %}
         {% if movie.year %}{{ movie.year }} &middot; {% endif %}{{ movie.people }}
       </span>
     </div>

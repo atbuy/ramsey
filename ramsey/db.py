@@ -10,6 +10,7 @@ SCHEMA = """
 CREATE TABLE IF NOT EXISTS movies (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
+    type TEXT,
     year TEXT,
     people TEXT NOT NULL DEFAULT '',
     image TEXT NOT NULL DEFAULT '',
@@ -42,9 +43,10 @@ def get_db() -> sqlite3.Connection:
 
     # Add columns missing from databases created with an older schema
     columns = {row[1] for row in db.execute("PRAGMA table_info(movies)")}
-    if "notes" not in columns:
-        db.execute("ALTER TABLE movies ADD COLUMN notes TEXT")
-        db.commit()
+    for column in ("notes", "type"):
+        if column not in columns:
+            db.execute(f"ALTER TABLE movies ADD COLUMN {column} TEXT")
+            db.commit()
 
     return db
 
@@ -62,12 +64,13 @@ def insert_movie(movie: MovieData) -> None:
 
     db = get_db()
     query = (
-        "INSERT INTO movies (id, title, year, people, image, added_at) "
-        "VALUES (?, ?, ?, ?, ?, ?)"
+        "INSERT INTO movies (id, title, type, year, people, image, added_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)"
     )
     values = (
         movie["id"],
         movie["title"],
+        movie.get("type"),
         movie["year"],
         movie["people"],
         movie["image"],

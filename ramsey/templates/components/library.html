@@ -1,4 +1,23 @@
 <div id="library"{% if oob %} hx-swap-oob="outerHTML"{% endif %}>
+  <div class="flex flex-wrap items-center gap-2 mt-6">
+    {% for value, label in [("all", "All"), ("movies", "Movies"), ("shows", "Shows")] %}
+    <button hx-get="/library?type={{ value }}" hx-target="#library" hx-swap="outerHTML"
+      class="rounded-full border px-3 py-1 text-sm transition
+        {% if type_filter == value %}bg-accent text-surface-deep border-accent font-semibold
+        {% else %}border-accent/40 text-muted hover:text-accent{% endif %}">
+      {{ label }}
+    </button>
+    {% endfor %}
+    <select name="sort" hx-get="/library" hx-trigger="change" hx-target="#library" hx-swap="outerHTML"
+      title="Sort watched movies"
+      class="ml-auto appearance-none bg-surface-deep text-muted border border-accent/40 rounded-md text-sm py-1.5 px-3 outline-none cursor-pointer hover:border-accent transition">
+      <option value="watched" {% if sort == "watched" %}selected{% endif %}>Recently watched</option>
+      <option value="rating" {% if sort == "rating" %}selected{% endif %}>Top rated</option>
+      <option value="times" {% if sort == "times" %}selected{% endif %}>Most watched</option>
+      <option value="title" {% if sort == "title" %}selected{% endif %}>Title</option>
+    </select>
+  </div>
+
   {% if watchlist %}
   <div class="flex items-center gap-4 my-8">
     <h2 class="font-display text-3xl text-accent tracking-wide">Watchlist</h2>
@@ -25,7 +44,11 @@
   </div>
   {% else %}
   <div class="text-center text-muted py-20">
+    {% if type_filter != "all" %}
+    Nothing in your watched list matches this filter.
+    {% else %}
     Nothing on the marquee yet &mdash; search above to log your first movie.
+    {% endif %}
   </div>
   {% endif %}
 </div>

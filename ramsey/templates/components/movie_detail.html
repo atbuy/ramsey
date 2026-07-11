@@ -9,6 +9,8 @@
         <div class="min-w-0">
           <div class="font-display text-2xl text-ink leading-tight">{{ movie.title }}</div>
           <div class="text-muted mt-1">
+            {% set label = kind(movie.type) %}
+            {% if label %}{{ label }} &middot; {% endif %}
             {% if movie.year %}{{ movie.year }} &middot; {% endif %}{{ movie.people }}
           </div>
           {% if movie.id.startswith("tt") %}

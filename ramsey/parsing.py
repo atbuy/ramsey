@@ -9,6 +9,7 @@ from ramsey.settings import get_settings
 class MovieData(TypedDict):
     id: str
     title: str
+    type: str | None
     year: str | None
     people: str
     image: str
@@ -45,6 +46,7 @@ def search_query(query: str) -> list[MovieData]:
         data: MovieData = {
             "id": item["id"],
             "title": item["l"],
+            "type": item.get("qid"),
             "year": str(year) if year else None,
             "people": item.get("s", ""),
             "image": image,
