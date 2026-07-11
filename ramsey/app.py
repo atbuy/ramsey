@@ -75,6 +75,7 @@ templates.env.globals["kind"] = TYPE_LABELS.get
 
 TYPE_FILTERS = ("all", "movies", "shows")
 SORTS = ("watched", "rating", "times", "title")
+VIEWS = ("watched", "watchlist")
 
 # Initialize redis connection
 redis = get_redis()
@@ -84,20 +85,18 @@ def format_date(timestamp: float) -> str:
     return datetime.fromtimestamp(timestamp).strftime("%b %d, %Y")
 
 
-def library_prefs(request: Request) -> tuple[str, str]:
-    """Get the active library filter and sort, from the query or cookies."""
+def library_prefs(request: Request) -> tuple[str, str, str]:
+    """Get the active library filter, sort and tab, from the query or cookies."""
 
-    type_filter = request.query_params.get("type") or request.cookies.get(
-        "library-type"
-    )
-    sort = request.query_params.get("sort") or request.cookies.get("library-sort")
+    def pref(name: str, allowed: tuple[str, ...]) -> str:
+        value = request.query_params.get(name) or request.cookies.get(f"library-{name}")
+        return value if value in allowed else allowed[0]
 
-    if type_filter not in TYPE_FILTERS:
-        type_filter = "all"
-    if sort not in SORTS:
-        sort = "watched"
+    type_filter = pref("type", TYPE_FILTERS)
+    sort = pref("sort", SORTS)
+    view = pref("view", VIEWS)
 
-    return type_filter, sort
+    return type_filter, sort, view
 
 
 def matches_filter(movie: dict, type_filter: str) -> bool:
@@ -111,7 +110,7 @@ def matches_filter(movie: dict, type_filter: str) -> bool:
 def library_context(request: Request) -> dict:
     """Split all movies into the watched list and the watchlist."""
 
-    type_filter, sort = library_prefs(request)
+    type_filter, sort, view = library_prefs(request)
 
     watched = []
     watchlist = []
@@ -132,16 +131,19 @@ def library_context(request: Request) -> dict:
     # The default "watched" order comes sorted from the database already
     if sort == "rating":
         watched.sort(key=lambda movie: movie["rating"] or 0, reverse=True)
+        watchlist.sort(key=lambda movie: movie["rating"] or 0, reverse=True)
     elif sort == "times":
         watched.sort(key=lambda movie: movie["times_watched"], reverse=True)
     elif sort == "title":
         watched.sort(key=lambda movie: movie["title"].lower())
+        watchlist.sort(key=lambda movie: movie["title"].lower())
 
     return {
         "watched": watched,
         "watchlist": watchlist,
         "type_filter": type_filter,
         "sort": sort,
+        "view": view,
     }
 
 
@@ -299,13 +301,15 @@ async def home(request: Request):
 
 @app.get("/library")
 async def library(request: Request):
-    """Render the library with the given filter and sort, and remember them."""
+    """Render the library with the given filter, sort and tab, and remember them."""
 
-    type_filter, sort = library_prefs(request)
+    type_filter, sort, view = library_prefs(request)
 
     response = HTMLResponse(render_library(request))
-    response.set_cookie("library-type", type_filter, max_age=60 * 60 * 24 * 365)
-    response.set_cookie("library-sort", sort, max_age=60 * 60 * 24 * 365)
+    year = 60 * 60 * 24 * 365
+    response.set_cookie("library-type", type_filter, max_age=year)
+    response.set_cookie("library-sort", sort, max_age=year)
+    response.set_cookie("library-view", view, max_age=year)
 
     return response
 
@@ -574,7 +578,7 @@ async def save_movie(request: Request, movie_id: str):
 async def pick_from_watchlist(request: Request):
     """Open a random movie from the watchlist, respecting the active filter."""
 
-    type_filter, _ = library_prefs(request)
+    type_filter, _, _ = library_prefs(request)
     candidates = [
         movie
         for movie in db.get_movies()
