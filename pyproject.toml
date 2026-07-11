@@ -16,6 +16,7 @@ dependencies = [
   "jinja2==3.1.4",
   "pydantic==2.10.1",
   "pydantic-settings==2.6.1",
+  "python-multipart==0.0.20",
   "redis[hiredis]==5.2.0",
   "requests==2.32.3",
   "uvicorn==0.32.1",

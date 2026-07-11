@@ -1,0 +1,31 @@
+<div id="library"{% if oob %} hx-swap-oob="outerHTML"{% endif %}>
+  {% if watchlist %}
+  <div class="flex items-center gap-4 my-8">
+    <h2 class="font-display text-3xl text-accent tracking-wide">Watchlist</h2>
+    <div class="flex-1 border-t border-accent/30"></div>
+    <span class="text-accent/70 text-xl">&#9734;</span>
+  </div>
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+    {% for movie in watchlist %}
+      {% include "./components/watchlist_movie.html" %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="flex items-center gap-4 my-8">
+    <h2 class="font-display text-3xl text-accent tracking-wide">Watched</h2>
+    <div class="flex-1 border-t border-accent/30"></div>
+    <span class="text-accent/70 text-xl">&#9733;</span>
+  </div>
+  {% if watched %}
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+    {% for movie in watched %}
+      {% include "./components/movie.html" %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center text-muted py-20">
+    Nothing on the marquee yet &mdash; search above to log your first movie.
+  </div>
+  {% endif %}
+</div>

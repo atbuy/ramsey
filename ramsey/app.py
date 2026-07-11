@@ -5,6 +5,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -45,34 +46,67 @@ def format_date(timestamp: float) -> str:
     return datetime.fromtimestamp(timestamp).strftime("%b %d, %Y")
 
 
-def get_watched() -> list[dict]:
-    """Get all watched movies with their formatted watch dates."""
+def library_context() -> dict:
+    """Split all movies into the watched list and the watchlist."""
 
     watched = []
-    for movie in db.get_watched():
+    watchlist = []
+    for movie in db.get_movies():
         dates = movie.pop("watch_dates")
         movie["times_watched"] = len(dates)
-        movie["first_watched"] = format_date(dates[0]) if dates else None
-        movie["rewatches"] = [format_date(date) for date in dates[1:]]
-        watched.append(movie)
+        if dates:
+            movie["first_watched"] = format_date(dates[0])
+            movie["rewatches"] = [format_date(date) for date in dates[1:]]
+            watched.append(movie)
+        else:
+            movie["added"] = format_date(movie["added_at"])
+            watchlist.append(movie)
 
-    return watched
+    return {"watched": watched, "watchlist": watchlist}
 
 
-def render_watched(request: Request):
-    """Render the watched list fragment, swapped in after every change."""
+def render_library(oob: bool = False) -> str:
+    """Render the library fragment, swapped in after every change."""
 
-    context = {"watched": get_watched()}
-    return templates.TemplateResponse(request, "components/watched.html", context)
+    context = library_context() | {"oob": oob}
+    return templates.get_template("components/library.html").render(context)
+
+
+def render_detail(movie_id: str) -> str:
+    """Render the detail view of a single movie."""
+
+    movie = dict(db.get_movie(movie_id))
+    movie["watches"] = [
+        {"id": watch["id"], "date": format_date(watch["watched_at"])}
+        for watch in db.get_watches(movie_id)
+    ]
+
+    return templates.get_template("components/movie_detail.html").render(
+        {"movie": movie}
+    )
+
+
+def respond(request: Request, movie_id: str | None = None):
+    """Render the fragments htmx expects, based on the triggering element.
+
+    Changes made from the detail view get an updated detail fragment plus
+    the library as an out-of-band swap; everything else gets the library.
+    """
+
+    if request.headers.get("hx-target") == "modal":
+        detail = ""
+        if movie_id and db.get_movie(movie_id) is not None:
+            detail = render_detail(movie_id)
+        return HTMLResponse(detail + render_library(oob=True))
+
+    return HTMLResponse(render_library())
 
 
 @app.get("/")
 async def home(request: Request):
     """Show index page."""
 
-    context = {"watched": get_watched()}
-
-    return templates.TemplateResponse(request, "index.html", context)
+    return templates.TemplateResponse(request, "index.html", library_context())
 
 
 @app.get("/search")
@@ -100,7 +134,13 @@ async def search(request: Request, search: str = ""):
                 key = f"{settings.redis.movie_prefix}:{movie['id']}"
                 redis.set(key, json.dumps(movie), ex=ttl)
 
-    context = {"results": results, "term": term, "saved": db.get_saved_ids()}
+    watched_ids = db.get_watched_ids()
+    context = {
+        "results": results,
+        "term": term,
+        "watched_ids": watched_ids,
+        "watchlist_ids": db.get_saved_ids() - watched_ids,
+    }
     render = templates.TemplateResponse(
         request,
         "components/search_results.html",
@@ -110,47 +150,110 @@ async def search(request: Request, search: str = ""):
     return render
 
 
-@app.post("/movies/{movie_id}")
-async def save_movie(request: Request, movie_id: str):
-    """Store a watched movie, or record a rewatch if it is already stored."""
+def save_from_search(movie_id: str) -> None:
+    """Store a movie using the data cached by a recent search."""
 
-    if db.get_movie(movie_id) is not None:
-        db.add_watch(movie_id)
-        return render_watched(request)
-
-    # Get the movie data from the cached search results
     cached = redis.get(f"{settings.redis.movie_prefix}:{movie_id}")
     if cached is None:
         raise HTTPException(404, "Movie not found in recent search results")
 
     db.insert_movie(json.loads(cached))
-    db.add_watch(movie_id)
-
-    return render_watched(request)
 
 
-@app.post("/movies/{movie_id}/watch")
-async def watch_movie(request: Request, movie_id: str):
-    """Record a rewatch."""
+@app.get("/movies/{movie_id}")
+async def movie_detail(movie_id: str):
+    """Show the detail view of a movie."""
 
     if db.get_movie(movie_id) is None:
         raise HTTPException(404, "Movie not found")
 
+    return HTMLResponse(render_detail(movie_id))
+
+
+@app.post("/movies/{movie_id}")
+async def save_movie(request: Request, movie_id: str):
+    """Store a watched movie, or record a rewatch if it is already stored."""
+
+    if db.get_movie(movie_id) is None:
+        save_from_search(movie_id)
+
     db.add_watch(movie_id)
 
-    return render_watched(request)
+    return respond(request, movie_id)
+
+
+@app.post("/watchlist/{movie_id}")
+async def add_to_watchlist(request: Request, movie_id: str):
+    """Store a movie to watch later, without a watch date."""
+
+    if db.get_movie(movie_id) is None:
+        save_from_search(movie_id)
+
+    return respond(request, movie_id)
+
+
+@app.post("/movies/{movie_id}/watch")
+async def watch_movie(request: Request, movie_id: str):
+    """Record a watch, optionally on a past date."""
+
+    if db.get_movie(movie_id) is None:
+        raise HTTPException(404, "Movie not found")
+
+    form = await request.form()
+    watched_on = str(form.get("watched_on") or "")
+
+    watched_at = None
+    if watched_on:
+        try:
+            watched_at = datetime.strptime(watched_on, "%Y-%m-%d").timestamp()
+        except ValueError:
+            raise HTTPException(400, "Invalid date") from None
+
+    db.add_watch(movie_id, watched_at)
+
+    return respond(request, movie_id)
 
 
 @app.delete("/movies/{movie_id}/watch")
 async def unwatch_movie(request: Request, movie_id: str):
-    """Undo the most recent rewatch, always keeping the first watch."""
+    """Undo the most recent watch.
+
+    Removing the last one moves the movie to the watchlist.
+    """
 
     if db.get_movie(movie_id) is None:
         raise HTTPException(404, "Movie not found")
 
     db.remove_latest_watch(movie_id)
 
-    return render_watched(request)
+    return respond(request, movie_id)
+
+
+@app.delete("/watches/{watch_id}")
+async def delete_watch(request: Request, watch_id: int):
+    """Delete a single watch event from a movie's history."""
+
+    watch = db.get_watch(watch_id)
+    if watch is None:
+        raise HTTPException(404, "Watch not found")
+
+    db.delete_watch(watch_id)
+
+    return respond(request, watch["movie_id"])
+
+
+@app.put("/movies/{movie_id}/notes")
+async def update_notes(request: Request, movie_id: str):
+    """Set or clear the notes of a movie."""
+
+    if db.get_movie(movie_id) is None:
+        raise HTTPException(404, "Movie not found")
+
+    form = await request.form()
+    notes = str(form.get("notes") or "").strip() or None
+    db.set_notes(movie_id, notes)
+
+    return respond(request, movie_id)
 
 
 @app.put("/movies/{movie_id}/rating/{rating}")
@@ -165,7 +268,7 @@ async def rate_movie(request: Request, movie_id: str, rating: int):
 
     db.set_rating(movie_id, rating)
 
-    return render_watched(request)
+    return respond(request, movie_id)
 
 
 @app.delete("/movies/{movie_id}/rating")
@@ -177,16 +280,16 @@ async def unrate_movie(request: Request, movie_id: str):
 
     db.set_rating(movie_id, None)
 
-    return render_watched(request)
+    return respond(request, movie_id)
 
 
 @app.delete("/movies/{movie_id}")
 async def remove_movie(request: Request, movie_id: str):
-    """Delete a movie and its watch history."""
+    """Delete a movie, its watch history and notes."""
 
     if db.get_movie(movie_id) is None:
         raise HTTPException(404, "Movie not found")
 
     db.delete_movie(movie_id)
 
-    return render_watched(request)
+    return respond(request)

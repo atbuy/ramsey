@@ -50,5 +50,6 @@ document.addEventListener("keyup", (event) => {
   if (event.code === "Escape") {
     search.blur();
     hideResults();
+    document.getElementById("modal").replaceChildren();
   }
 });

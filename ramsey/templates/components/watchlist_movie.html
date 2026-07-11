@@ -2,11 +2,6 @@
   <div class="relative cursor-pointer" hx-get="/movies/{{ movie.id }}" hx-target="#modal">
     <img src="{{ movie.image }}" alt="{{ movie.title }} poster" loading="lazy"
       class="w-full aspect-[2/3] object-cover" />
-    {% if movie.times_watched > 1 %}
-    <span class="absolute top-2 right-2 rounded-full bg-black/70 border border-accent/60 text-star-on text-xs font-semibold px-2 py-1">
-      &times;{{ movie.times_watched }}
-    </span>
-    {% endif %}
   </div>
 
   <div class="flex flex-col flex-1 p-4">
@@ -15,28 +10,16 @@
     <span class="text-muted text-sm truncate">
       {% if movie.year %}{{ movie.year }} &middot; {% endif %}{{ movie.people }}
     </span>
-    <span class="text-muted/70 text-xs mt-2">
-      First watched: {{ movie.first_watched }}
-      {% if movie.rewatches %}&middot; Rewatched: {{ movie.rewatches | join(", ") }}{% endif %}
-    </span>
-
-    {% include "./components/stars.html" %}
+    <span class="text-muted/70 text-xs mt-2">Added: {{ movie.added }}</span>
 
     <div class="flex items-center justify-between mt-auto pt-3 border-t border-accent/10">
-      <div class="flex items-center gap-2">
-        <button hx-post="/movies/{{ movie.id }}/watch" hx-target="#library" hx-swap="outerHTML"
-          title="Watched it again"
-          class="w-7 h-7 flex items-center justify-center rounded-full border border-accent/40 text-accent hover:bg-accent/20 transition text-lg leading-none">
-          +
-        </button>
-        <button hx-delete="/movies/{{ movie.id }}/watch" hx-target="#library" hx-swap="outerHTML"
-          title="Undo last watch"
-          class="w-7 h-7 flex items-center justify-center rounded-full border border-accent/40 text-accent hover:bg-accent/20 transition text-lg leading-none">
-          &minus;
-        </button>
-      </div>
-      <button hx-delete="/movies/{{ movie.id }}" hx-confirm="Remove {{ movie.title }} and its watch history?"
-        hx-target="#library" hx-swap="outerHTML" title="Remove movie"
+      <button hx-post="/movies/{{ movie.id }}/watch" hx-target="#library" hx-swap="outerHTML"
+        title="Log your first watch"
+        class="border border-accent/40 text-accent rounded-full px-3 py-1 hover:bg-accent/20 transition text-sm">
+        &check; Watched it
+      </button>
+      <button hx-delete="/movies/{{ movie.id }}" hx-confirm="Remove {{ movie.title }} from your watchlist?"
+        hx-target="#library" hx-swap="outerHTML" title="Remove from watchlist"
         class="text-danger/60 hover:text-danger transition p-1">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="14px" height="14px" fill="currentColor">
           <path

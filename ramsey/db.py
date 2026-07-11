@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS movies (
     people TEXT NOT NULL DEFAULT '',
     image TEXT NOT NULL DEFAULT '',
     rating INTEGER,
+    notes TEXT,
     added_at REAL NOT NULL
 );
 
@@ -38,6 +39,12 @@ def get_db() -> sqlite3.Connection:
     db.row_factory = sqlite3.Row
     db.execute("PRAGMA foreign_keys = ON")
     db.executescript(SCHEMA)
+
+    # Add columns missing from databases created with an older schema
+    columns = {row[1] for row in db.execute("PRAGMA table_info(movies)")}
+    if "notes" not in columns:
+        db.execute("ALTER TABLE movies ADD COLUMN notes TEXT")
+        db.commit()
 
     return db
 
@@ -80,21 +87,39 @@ def add_watch(movie_id: str, watched_at: float | None = None) -> None:
     db.commit()
 
 
-def count_watches(movie_id: str) -> int:
-    """Count how many times a movie has been watched."""
+def get_watches(movie_id: str) -> list[sqlite3.Row]:
+    """Get the watch events of a movie, most recent first."""
 
     db = get_db()
-    query = "SELECT COUNT(*) FROM watches WHERE movie_id = ?"
-    row = db.execute(query, (movie_id,)).fetchone()
+    query = (
+        "SELECT id, watched_at FROM watches WHERE movie_id = ? "
+        "ORDER BY watched_at DESC, id DESC"
+    )
 
-    return int(row[0])
+    return db.execute(query, (movie_id,)).fetchall()
 
 
-def remove_latest_watch(movie_id: str) -> bool:
-    """Remove the most recent watch event, always keeping the first one."""
+def get_watch(watch_id: int) -> sqlite3.Row | None:
+    """Get a single watch event."""
 
-    if count_watches(movie_id) <= 1:
-        return False
+    db = get_db()
+    query = "SELECT * FROM watches WHERE id = ?"
+    return db.execute(query, (watch_id,)).fetchone()
+
+
+def delete_watch(watch_id: int) -> None:
+    """Delete a single watch event."""
+
+    db = get_db()
+    db.execute("DELETE FROM watches WHERE id = ?", (watch_id,))
+    db.commit()
+
+
+def remove_latest_watch(movie_id: str) -> None:
+    """Remove the most recent watch event.
+
+    Removing the last one moves the movie to the watchlist.
+    """
 
     db = get_db()
     query = (
@@ -107,7 +132,13 @@ def remove_latest_watch(movie_id: str) -> bool:
     db.execute(query, (movie_id,))
     db.commit()
 
-    return True
+
+def set_notes(movie_id: str, notes: str | None) -> None:
+    """Set or clear the notes of a movie."""
+
+    db = get_db()
+    db.execute("UPDATE movies SET notes = ? WHERE id = ?", (notes, movie_id))
+    db.commit()
 
 
 def set_rating(movie_id: str, rating: int | None) -> None:
@@ -135,8 +166,17 @@ def get_saved_ids() -> set[str]:
     return {row["id"] for row in rows}
 
 
-def get_watched() -> list[dict]:
-    """Get all watched movies with their watch dates, most recently watched first."""
+def get_watched_ids() -> set[str]:
+    """Get the identifiers of movies with at least one watch."""
+
+    db = get_db()
+    rows = db.execute("SELECT DISTINCT movie_id FROM watches").fetchall()
+
+    return {row["movie_id"] for row in rows}
+
+
+def get_movies() -> list[dict]:
+    """Get all movies with their watch dates, most recently watched first."""
 
     db = get_db()
     movies = db.execute("SELECT * FROM movies").fetchall()

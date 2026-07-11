@@ -1,0 +1,60 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/70" onclick="document.getElementById('modal').replaceChildren()"></div>
+  <div class="relative flex gap-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl bg-surface border border-accent/30 shadow-2xl shadow-black/70 p-6">
+    <img src="{{ movie.image }}" alt="{{ movie.title }} poster"
+      class="hidden sm:block w-44 aspect-[2/3] object-cover rounded-lg self-start" />
+
+    <div class="flex flex-col flex-1 min-w-0">
+      <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0">
+          <div class="font-display text-2xl text-ink leading-tight">{{ movie.title }}</div>
+          <div class="text-muted mt-1">
+            {% if movie.year %}{{ movie.year }} &middot; {% endif %}{{ movie.people }}
+          </div>
+          {% if movie.id.startswith("tt") %}
+          <a href="https://www.imdb.com/title/{{ movie.id }}/" target="_blank" rel="noopener"
+            class="text-accent text-sm hover:underline">View on IMDB &nearr;</a>
+          {% endif %}
+        </div>
+        <button onclick="document.getElementById('modal').replaceChildren()" title="Close"
+          class="text-muted hover:text-ink text-2xl leading-none px-2">&times;</button>
+      </div>
+
+      {% set star_target = "#modal" %}
+      {% set star_swap = "innerHTML" %}
+      {% include "./components/stars.html" %}
+
+      <form hx-put="/movies/{{ movie.id }}/notes" hx-target="#modal" class="flex flex-col gap-2 mt-5">
+        <label for="notes-{{ movie.id }}" class="text-muted text-sm">Notes</label>
+        <textarea id="notes-{{ movie.id }}" name="notes" rows="3" placeholder="Your verdict..."
+          class="bg-surface-deep/60 border border-accent/20 rounded-md p-2 text-ink placeholder-muted/50 outline-none focus:border-accent/60 resize-y">{{ movie.notes or "" }}</textarea>
+        <button class="self-end border border-accent/40 text-accent rounded-md px-3 py-1 hover:bg-accent/20 transition text-sm">
+          Save notes
+        </button>
+      </form>
+
+      <div class="mt-5">
+        <div class="text-muted text-sm">
+          Watch history
+          {% if not movie.watches %}&mdash; none yet, this movie is on your watchlist{% endif %}
+        </div>
+        <ul class="flex flex-col divide-y divide-accent/10 mt-1">
+          {% for watch in movie.watches %}
+          <li class="flex items-center justify-between py-1.5">
+            <span class="text-ink">{{ watch.date }}</span>
+            <button hx-delete="/watches/{{ watch.id }}" hx-target="#modal" title="Remove this watch"
+              class="text-danger/60 hover:text-danger transition px-2 text-lg leading-none">&times;</button>
+          </li>
+          {% endfor %}
+        </ul>
+        <form hx-post="/movies/{{ movie.id }}/watch" hx-target="#modal" class="flex items-center gap-2 mt-3">
+          <input type="date" name="watched_on" title="Leave empty for today"
+            class="bg-surface-deep/60 border border-accent/20 rounded-md p-1.5 text-ink outline-none focus:border-accent/60" />
+          <button class="border border-accent/40 text-accent rounded-md px-3 py-1 hover:bg-accent/20 transition text-sm">
+            Add watch
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
