@@ -1,0 +1,30 @@
+{
+  "background_color": "#160b0e",
+  "description": "Keep track of what movies and shows you have seen",
+  "display": "standalone",
+  "icons": [
+    {
+      "purpose": "any",
+      "sizes": "192x192",
+      "src": "/static/images/icon-192.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "any",
+      "sizes": "512x512",
+      "src": "/static/images/icon-512.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "maskable",
+      "sizes": "512x512",
+      "src": "/static/images/icon-maskable-512.png",
+      "type": "image/png"
+    }
+  ],
+  "name": "Ramsey",
+  "scope": "/",
+  "short_name": "Ramsey",
+  "start_url": "/",
+  "theme_color": "#160b0e"
+}

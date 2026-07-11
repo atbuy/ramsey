@@ -2,12 +2,24 @@ const search = document.getElementById("search");
 const searchResults = document.getElementById("search-results");
 const themePicker = document.getElementById("theme-picker");
 
+// Keep the browser/PWA chrome color in sync with the active theme
+const themeColor = document.querySelector('meta[name="theme-color"]');
+const applyThemeColor = () => {
+  const style = getComputedStyle(document.documentElement);
+  const triplet = style.getPropertyValue("--surface-deep").trim();
+  if (triplet) {
+    themeColor.content = `rgb(${triplet.split(/\s+/).join(",")})`;
+  }
+};
+
 // The theme itself is applied before first paint in base.html;
 // here the picker is kept in sync and persists the choice
 themePicker.value = document.documentElement.dataset.theme || "marquee";
+applyThemeColor();
 themePicker.addEventListener("change", () => {
   document.documentElement.dataset.theme = themePicker.value;
   localStorage.setItem("theme", themePicker.value);
+  applyThemeColor();
 });
 
 const showResults = () => searchResults.classList.remove("hidden");

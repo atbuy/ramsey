@@ -6,6 +6,11 @@
     <title>{% block title %}{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{{ static_url('images/favicon.ico') }}">
 
+    <!-- PWA: installable on the home screen -->
+    <link rel="manifest" href="{{ static_url('manifest.json') }}">
+    <meta name="theme-color" content="#160b0e">
+    <link rel="apple-touch-icon" href="{{ static_url('images/icon-180.png') }}">
+
     <!-- Restore the chosen theme before first paint to avoid flashing -->
     <script>
       document.documentElement.dataset.theme = localStorage.getItem("theme") || "marquee";
