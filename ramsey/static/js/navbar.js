@@ -1,6 +1,10 @@
 const search = document.getElementById("search");
 const searchResults = document.getElementById("search-results");
 const themePicker = document.getElementById("theme-picker");
+const libraryFilter = document.getElementById("library-filter");
+
+const showResults = () => searchResults.classList.remove("hidden");
+const hideResults = () => searchResults.classList.add("hidden");
 
 // Keep the browser/PWA chrome color in sync with the active theme
 const themeColor = document.querySelector('meta[name="theme-color"]');
@@ -22,20 +26,72 @@ themePicker.addEventListener("change", () => {
   applyThemeColor();
 });
 
-const showResults = () => searchResults.classList.remove("hidden");
-const hideResults = () => searchResults.classList.add("hidden");
+// Filter the library cards by title, entirely client side
+const applyLibraryFilter = () => {
+  if (!libraryFilter) return;
 
-// Show the dropdown when a search returns results, and hide it
-// after a movie is saved from the results
+  const term = libraryFilter.value.trim().toLowerCase();
+  const cards = [...document.querySelectorAll("#library [data-title]")];
+
+  let visible = 0;
+  for (const card of cards) {
+    const match = !term || card.dataset.title.includes(term);
+    card.classList.toggle("hidden", !match);
+    if (match) visible += 1;
+  }
+
+  const empty = document.getElementById("library-filter-empty");
+  empty.classList.toggle("hidden", visible > 0 || !term || !cards.length);
+};
+
+libraryFilter?.addEventListener("input", applyLibraryFilter);
+
+// Keyboard navigation for the search results
+let activeRow = -1;
+
+const searchRows = () => [...searchResults.querySelectorAll(".search-row")];
+
+const highlightRow = () => {
+  searchRows().forEach((row, index) => {
+    row.classList.toggle("bg-accent/10", index === activeRow);
+  });
+
+  const row = searchRows()[activeRow];
+  if (row) row.scrollIntoView({ block: "nearest" });
+};
+
+search.addEventListener("keydown", (event) => {
+  const rows = searchRows();
+  if (!rows.length) return;
+
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    activeRow = Math.min(activeRow + 1, rows.length - 1);
+    highlightRow();
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    activeRow = Math.max(activeRow - 1, 0);
+    highlightRow();
+  } else if (event.key === "Enter" && activeRow >= 0) {
+    event.preventDefault();
+    rows[activeRow].querySelector("button").click();
+  }
+});
+
+// Show the dropdown when a search returns results, hide it after a
+// movie is saved from the results, and re-apply the library filter
+// whenever the library re-renders
 document.body.addEventListener("htmx:afterSwap", (event) => {
   if (event.detail.target === searchResults) {
+    activeRow = -1;
     if (searchResults.textContent.trim() !== "") {
       showResults();
     } else {
       hideResults();
     }
-  } else if (event.detail.target.id === "watched-list") {
+  } else if (event.detail.target.id === "library") {
     hideResults();
+    applyLibraryFilter();
   }
 });
 
@@ -52,7 +108,8 @@ document.addEventListener("mousedown", (event) => {
   }
 });
 
-// Add '/' as a shortcut for the search bar, and Escape to close the results
+// Add '/' as a shortcut for the search bar, and Escape to close
+// the results and the detail view
 document.addEventListener("keyup", (event) => {
   if (event.code === "Slash") {
     search.focus();

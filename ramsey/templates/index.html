@@ -6,6 +6,13 @@ Ramsey
 
 {% block body %}
 <main class="max-w-7xl mx-auto px-6 pb-16">
+  <div class="mt-6 -mb-2">
+    <input type="text" id="library-filter" placeholder="Filter your library..."
+      class="w-full max-w-xs bg-transparent border-b-2 border-accent/40 focus:border-accent text-ink placeholder-muted/70 p-2 outline-none transition" />
+  </div>
+  <div id="library-filter-empty" class="hidden text-center text-muted py-10">
+    No titles match your filter.
+  </div>
   {% include "./components/library.html" %}
 </main>
 {% endblock %}

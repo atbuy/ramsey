@@ -20,7 +20,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-      href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Bebas+Neue&family=Cormorant+Garamond:wght@600;700&family=Limelight&family=Marcellus&family=Monoton&family=Playfair+Display:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Archivo:wght@500;600;700&family=Bebas+Neue&family=Cormorant+Garamond:wght@600;700&family=Fraunces:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Limelight&family=Marcellus&family=Monoton&family=Playfair+Display:wght@500;600;700&family=Righteous&family=Space+Grotesk:wght@500;700&family=Special+Elite&display=swap"
       rel="stylesheet">
 
     <!-- Themes. Every color is a semantic variable, so a theme is just
@@ -84,6 +84,118 @@
         --font-brand: "Marcellus", serif;
         --font-display: "Cormorant Garamond", Georgia, serif;
         --page-background: radial-gradient(1000px 500px at 50% -120px, #35322e, #1a1918 65%);
+      }
+
+      :root[data-theme="midnight"] {
+        --surface: 23 23 27;
+        --surface-deep: 10 10 12;
+        --accent: 125 211 252;
+        --ink: 228 231 238;
+        --muted: 138 144 158;
+        --danger: 248 113 113;
+        --star-on: 56 189 248;
+        --star-off: 51 55 65;
+        --font-brand: "Space Grotesk", sans-serif;
+        --font-display: "Space Grotesk", sans-serif;
+        --page-background: radial-gradient(1000px 500px at 50% -120px, #161821, #0a0a0c 60%);
+      }
+
+      :root[data-theme="crt"] {
+        --surface: 13 21 13;
+        --surface-deep: 6 9 6;
+        --accent: 74 222 128;
+        --ink: 215 240 215;
+        --muted: 126 168 126;
+        --danger: 248 113 113;
+        --star-on: 134 239 172;
+        --star-off: 41 64 44;
+        --font-brand: "IBM Plex Mono", monospace;
+        --font-display: "IBM Plex Mono", monospace;
+        --page-background: radial-gradient(1000px 500px at 50% -120px, #10240f, #060906 60%);
+      }
+
+      :root[data-theme="arthouse"] {
+        --surface: 27 27 29;
+        --surface-deep: 15 15 16;
+        --accent: 235 68 78;
+        --ink: 241 240 236;
+        --muted: 163 161 155;
+        --danger: 251 146 60;
+        --star-on: 244 114 114;
+        --star-off: 58 58 62;
+        --font-brand: "Archivo", sans-serif;
+        --font-display: "Archivo", sans-serif;
+        --page-background: radial-gradient(1000px 500px at 50% -120px, #202023, #0f0f10 60%);
+      }
+
+      :root[data-theme="silver"] {
+        --surface: 30 30 32;
+        --surface-deep: 18 18 20;
+        --accent: 185 191 201;
+        --ink: 236 236 238;
+        --muted: 151 151 159;
+        --danger: 248 113 113;
+        --star-on: 216 221 230;
+        --star-off: 58 58 64;
+        --font-brand: "Playfair Display", Georgia, serif;
+        --font-display: "Playfair Display", Georgia, serif;
+        --page-background: radial-gradient(1000px 500px at 50% -120px, #232329, #121214 60%);
+      }
+
+      :root[data-theme="dusk"] {
+        --surface: 36 27 51;
+        --surface-deep: 20 15 34;
+        --accent: 251 146 60;
+        --ink: 242 233 225;
+        --muted: 168 155 176;
+        --danger: 248 113 113;
+        --star-on: 251 191 36;
+        --star-off: 70 55 92;
+        --font-brand: "Righteous", sans-serif;
+        --font-display: "Archivo", sans-serif;
+        --page-background: linear-gradient(#171030, #2b1a45 55%, #58253a 85%, #6e392f);
+      }
+
+      :root[data-theme="giallo"] {
+        --surface: 29 18 22;
+        --surface-deep: 14 7 9;
+        --accent: 234 179 8;
+        --ink: 245 234 217;
+        --muted: 176 154 146;
+        --danger: 239 68 68;
+        --star-on: 244 63 94;
+        --star-off: 64 34 40;
+        --font-brand: "Bebas Neue", sans-serif;
+        --font-display: "Bebas Neue", sans-serif;
+        --page-background: radial-gradient(900px 450px at 50% -100px, #3d0d14, #0e0709 65%);
+      }
+
+      :root[data-theme="matinee"] {
+        --surface: 253 248 239;
+        --surface-deep: 241 232 217;
+        --accent: 15 118 110;
+        --ink: 43 41 38;
+        --muted: 109 103 94;
+        --danger: 190 18 60;
+        --star-on: 219 39 119;
+        --star-off: 221 211 192;
+        --font-brand: "Fraunces", Georgia, serif;
+        --font-display: "Fraunces", Georgia, serif;
+        --page-background: radial-gradient(1200px 600px at 50% -150px, #fffdf6, #f1e8d9 70%);
+      }
+
+      :root[data-theme="stub"] {
+        --surface: 247 239 221;
+        --surface-deep: 234 223 198;
+        --accent: 30 58 138;
+        --ink: 50 45 36;
+        --muted: 124 115 97;
+        --danger: 185 28 28;
+        --star-on: 180 83 9;
+        --star-off: 217 203 170;
+        --font-brand: "Special Elite", cursive;
+        --font-display: "Special Elite", cursive;
+        --page-background: radial-gradient(1200px 600px at 50% -150px, #fbf4e4, #eadfc6 70%);
       }
 
       body {

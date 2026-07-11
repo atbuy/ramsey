@@ -10,13 +10,24 @@
       <option value="vhs">VHS '88</option>
       <option value="noir">Noir</option>
       <option value="chef">Chef's Table</option>
+      <option value="midnight">Midnight</option>
+      <option value="crt">Projection Booth</option>
+      <option value="arthouse">Arthouse</option>
+      <option value="silver">Silver Screen</option>
+      <option value="dusk">Drive-in Dusk</option>
+      <option value="giallo">Giallo</option>
+      <option value="matinee">Matin&eacute;e</option>
+      <option value="stub">Ticket Stub</option>
     </select>
   </div>
 
   <div class="order-3 sm:order-2 relative w-full sm:w-auto sm:flex-1 sm:max-w-xl">
     <input type="text" id="search" placeholder="Search for a movie or show..." name="search" hx-get="/search"
-      hx-trigger="input changed delay:750ms, search" hx-target="#search-results"
-      class="w-full bg-transparent border-b-2 border-accent/40 focus:border-accent text-ink placeholder-muted/70 p-2 outline-none transition duration-200 ease-in-out" />
+      hx-trigger="input changed delay:750ms, search" hx-target="#search-results" hx-indicator="#search-spinner"
+      class="w-full bg-transparent border-b-2 border-accent/40 focus:border-accent text-ink placeholder-muted/70 p-2 pr-8 outline-none transition duration-200 ease-in-out" />
+    <div id="search-spinner"
+      class="htmx-indicator absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin">
+    </div>
     <div id="search-results"
       class="hidden absolute left-0 right-0 top-full mt-2 z-50 rounded-lg border border-accent/30 bg-surface shadow-2xl shadow-black/70 p-2 max-h-[70vh] overflow-y-auto">
     </div>

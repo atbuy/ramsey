@@ -11,7 +11,7 @@ Movie critic application. Rate and keep track of what movies and shows you have 
 - Filter the library by movies/shows and sort by recency, rating, watch count, or title
 - Stats page: watches per month, rating distribution, and most rewatched titles
 - Export the whole library as JSON or CSV
-- Four selectable themes: Marquee, VHS '88, Noir, and Chef's Table
+- Twelve selectable themes, dark and light &mdash; from Marquee to Giallo to Ticket Stub
 - Installable on the phone home screen as a PWA
 
 Built with FastAPI, Jinja2, and HTMX. The library is stored in SQLite;
