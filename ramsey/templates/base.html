@@ -6,18 +6,23 @@
     <title>{% block title %}{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
 
+    <!-- Restore the chosen theme before first paint to avoid flashing -->
+    <script>
+      document.documentElement.dataset.theme = localStorage.getItem("theme") || "marquee";
+    </script>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-      href="https://fonts.googleapis.com/css2?family=Limelight&family=Playfair+Display:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Bebas+Neue&family=Cormorant+Garamond:wght@600;700&family=Limelight&family=Marcellus&family=Monoton&family=Playfair+Display:wght@500;600;700&display=swap"
       rel="stylesheet">
 
-    <!-- Theme: grand cinema marquee.
-         Every color is a semantic variable, so adding a new theme later
-         only means swapping this block. -->
+    <!-- Themes. Every color is a semantic variable, so a theme is just
+         one variable block; templates never reference raw colors. -->
     <style>
-      :root {
+      :root,
+      :root[data-theme="marquee"] {
         --surface: 36 16 20;
         --surface-deep: 22 11 14;
         --accent: 212 164 76;
@@ -31,8 +36,54 @@
         --page-background: radial-gradient(1100px 520px at 50% -120px, #3a1a20, #160b0e 60%);
       }
 
+      :root[data-theme="vhs"] {
+        --surface: 26 22 48;
+        --surface-deep: 13 10 30;
+        --accent: 236 72 176;
+        --ink: 232 230 250;
+        --muted: 150 142 190;
+        --danger: 255 92 92;
+        --star-on: 34 211 238;
+        --star-off: 74 62 110;
+        --font-brand: "Monoton", cursive;
+        --font-display: "Bebas Neue", sans-serif;
+        --page-background:
+          radial-gradient(900px 400px at 80% -100px, rgba(236, 72, 176, 0.25), transparent),
+          radial-gradient(700px 320px at 10% -80px, rgba(34, 211, 238, 0.18), transparent),
+          linear-gradient(#14102a, #0d0a1e);
+      }
+
+      :root[data-theme="noir"] {
+        --surface: 255 251 240;
+        --surface-deep: 240 233 216;
+        --accent: 146 64 14;
+        --ink: 28 25 23;
+        --muted: 87 83 78;
+        --danger: 153 27 27;
+        --star-on: 180 83 9;
+        --star-off: 214 202 178;
+        --font-brand: "Abril Fatface", serif;
+        --font-display: "Playfair Display", Georgia, serif;
+        --page-background: radial-gradient(1200px 600px at 50% -150px, #fdf6e3, #efe6cd 70%);
+      }
+
+      :root[data-theme="chef"] {
+        --surface: 42 40 38;
+        --surface-deep: 26 25 24;
+        --accent: 184 115 51;
+        --ink: 240 236 227;
+        --muted: 163 152 136;
+        --danger: 198 90 78;
+        --star-on: 222 160 88;
+        --star-off: 78 72 66;
+        --font-brand: "Marcellus", serif;
+        --font-display: "Cormorant Garamond", Georgia, serif;
+        --page-background: radial-gradient(1000px 500px at 50% -120px, #35322e, #1a1918 65%);
+      }
+
       body {
-        background: var(--page-background) fixed;
+        background: var(--page-background);
+        background-attachment: fixed;
       }
     </style>
 

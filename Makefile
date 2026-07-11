@@ -1,3 +1,7 @@
+.PHONY: lock dep-update upgrade install install-dev install-all run
+
+.DEFAULT_GOAL := run
+
 lock:
 	uv lock
 

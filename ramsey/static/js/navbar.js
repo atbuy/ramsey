@@ -1,5 +1,14 @@
 const search = document.getElementById("search");
 const searchResults = document.getElementById("search-results");
+const themePicker = document.getElementById("theme-picker");
+
+// The theme itself is applied before first paint in base.html;
+// here the picker is kept in sync and persists the choice
+themePicker.value = document.documentElement.dataset.theme || "marquee";
+themePicker.addEventListener("change", () => {
+  document.documentElement.dataset.theme = themePicker.value;
+  localStorage.setItem("theme", themePicker.value);
+});
 
 const showResults = () => searchResults.classList.remove("hidden");
 const hideResults = () => searchResults.classList.add("hidden");
