@@ -1,14 +1,31 @@
-<div class="flex flex-wrap flex-col justify-evenly items-start">
+{% if results %}
+<div class="flex flex-col divide-y divide-accent/10">
   {% for movie in results %}
-  <div class="flex rounded-md border-gray-400 border-2 mb-3" style="min-width: 500px">
-    {% include "./components/movie.html" %}
+  <div class="flex items-center gap-3 py-2.5 px-2">
+    <img src="{{ movie.image }}" alt="{{ movie.title }} poster" loading="lazy"
+      class="w-10 h-14 object-cover rounded shadow shrink-0" />
+    <div class="flex flex-col min-w-0 flex-1">
+      <span class="font-display text-ink truncate">{{ movie.title }}</span>
+      <span class="text-muted text-sm truncate">
+        {% if movie.year %}{{ movie.year }} &middot; {% endif %}{{ movie.people }}
+      </span>
+    </div>
+    {% if movie.id in saved %}
     <button hx-post="/movies/{{ movie.id }}" hx-target="#watched-list" hx-swap="outerHTML"
-      class="flex items-center justify-center px-5 bg-gray-400">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="25px" height="25px" fill="white">
-        <path
-          d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-144 0 0-144z" />
-      </svg>
+      title="Already in your watched list &mdash; click to log another watch"
+      class="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-accent text-surface-deep font-bold">
+      &check;
     </button>
+    {% else %}
+    <button hx-post="/movies/{{ movie.id }}" hx-target="#watched-list" hx-swap="outerHTML"
+      title="Add to your watched list"
+      class="shrink-0 w-8 h-8 flex items-center justify-center rounded-full border border-accent/50 text-accent hover:bg-accent hover:text-surface-deep transition text-lg leading-none">
+      +
+    </button>
+    {% endif %}
   </div>
   {% endfor %}
 </div>
+{% elif term %}
+<div class="text-muted p-3">No results for &ldquo;{{ term }}&rdquo;</div>
+{% endif %}

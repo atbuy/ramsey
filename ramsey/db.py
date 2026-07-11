@@ -126,6 +126,15 @@ def delete_movie(movie_id: str) -> None:
     db.commit()
 
 
+def get_saved_ids() -> set[str]:
+    """Get the identifiers of all stored movies."""
+
+    db = get_db()
+    rows = db.execute("SELECT id FROM movies").fetchall()
+
+    return {row["id"] for row in rows}
+
+
 def get_watched() -> list[dict]:
     """Get all watched movies with their watch dates, most recently watched first."""
 

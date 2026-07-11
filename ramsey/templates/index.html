@@ -5,10 +5,12 @@ Ramsey
 {% endblock %}
 
 {% block body %}
-<div class="mt-4 max-w-full p-2 flex items-center justify-center">
-  <div class="px-5 w-full">
-    <div class="text-xl my-4 w-full font-semibold border-b-2 border-white">Watched</div>
-    {% include "./components/watched.html" %}
+<main class="max-w-7xl mx-auto px-6 pb-16">
+  <div class="flex items-center gap-4 my-8">
+    <h1 class="font-display text-3xl text-accent tracking-wide">Watched</h1>
+    <div class="flex-1 border-t border-accent/30"></div>
+    <span class="text-accent/70 text-xl">&#9733;</span>
   </div>
-</div>
+  {% include "./components/watched.html" %}
+</main>
 {% endblock %}

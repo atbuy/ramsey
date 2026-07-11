@@ -49,7 +49,7 @@ def get_watched() -> list[dict]:
 def render_watched(request: Request):
     """Render the watched list fragment, swapped in after every change."""
 
-    context = {"watched": get_watched(), "in_index": True}
+    context = {"watched": get_watched()}
     return templates.TemplateResponse(request, "components/watched.html", context)
 
 
@@ -57,7 +57,7 @@ def render_watched(request: Request):
 async def home(request: Request):
     """Show index page."""
 
-    context = {"watched": get_watched(), "in_index": True}
+    context = {"watched": get_watched()}
 
     return templates.TemplateResponse(request, "index.html", context)
 
@@ -67,34 +67,27 @@ async def search(request: Request, search: str = ""):
     """Search for movies and shows with the given query."""
 
     term = search.strip()
+    results = []
 
-    # Quickly respond with an empty component if no query was given
-    if term == "":
-        context = {"results": []}
-        render = templates.TemplateResponse(
-            request,
-            "components/search_results.html",
-            context,
-        )
-        return render
+    if term:
+        # Check if the query results are cached
+        cached = redis.get(f"{settings.redis.search_prefix}:{term}")
+        if cached:
+            results = json.loads(cached)
+        else:
+            # Parse results and store them in cache
+            results = search_query(term)
 
-    # Check if the query results are cached
-    cached = redis.get(f"{settings.redis.search_prefix}:{term}")
-    if cached:
-        results = json.loads(cached)
-    else:
-        # Parse results and store them in cache
-        results = search_query(term)
+            ttl = settings.redis.search_ttl
+            key = f"{settings.redis.search_prefix}:{term}"
+            redis.set(key, json.dumps(results), ex=ttl)
 
-        ttl = settings.redis.search_ttl
-        redis.set(f"{settings.redis.search_prefix}:{term}", json.dumps(results), ex=ttl)
+            # Also cache each movie by ID, so it can be saved later
+            for movie in results:
+                key = f"{settings.redis.movie_prefix}:{movie['id']}"
+                redis.set(key, json.dumps(movie), ex=ttl)
 
-        # Also cache each movie by ID, so it can be saved later
-        for movie in results:
-            key = f"{settings.redis.movie_prefix}:{movie['id']}"
-            redis.set(key, json.dumps(movie), ex=ttl)
-
-    context = {"results": results}
+    context = {"results": results, "term": term, "saved": db.get_saved_ids()}
     render = templates.TemplateResponse(
         request,
         "components/search_results.html",

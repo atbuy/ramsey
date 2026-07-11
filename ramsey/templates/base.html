@@ -6,8 +6,60 @@
     <title>{% block title %}{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
 
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Limelight&family=Playfair+Display:wght@500;600;700&display=swap"
+      rel="stylesheet">
+
+    <!-- Theme: grand cinema marquee.
+         Every color is a semantic variable, so adding a new theme later
+         only means swapping this block. -->
+    <style>
+      :root {
+        --surface: 36 16 20;
+        --surface-deep: 22 11 14;
+        --accent: 212 164 76;
+        --ink: 243 233 214;
+        --muted: 179 160 140;
+        --danger: 201 107 99;
+        --star-on: 227 179 65;
+        --star-off: 90 64 72;
+        --font-brand: "Limelight", serif;
+        --font-display: "Playfair Display", Georgia, serif;
+        --page-background: radial-gradient(1100px 520px at 50% -120px, #3a1a20, #160b0e 60%);
+      }
+
+      body {
+        background: var(--page-background) fixed;
+      }
+    </style>
+
     <!-- TailwindCSS  -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              surface: "rgb(var(--surface) / <alpha-value>)",
+              "surface-deep": "rgb(var(--surface-deep) / <alpha-value>)",
+              accent: "rgb(var(--accent) / <alpha-value>)",
+              ink: "rgb(var(--ink) / <alpha-value>)",
+              muted: "rgb(var(--muted) / <alpha-value>)",
+              danger: "rgb(var(--danger) / <alpha-value>)",
+              "star-on": "rgb(var(--star-on) / <alpha-value>)",
+              "star-off": "rgb(var(--star-off) / <alpha-value>)",
+            },
+            fontFamily: {
+              brand: ["var(--font-brand)"],
+              display: ["var(--font-display)"],
+            },
+          },
+        },
+      };
+    </script>
 
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@2.0.3"></script>
@@ -15,7 +67,7 @@
     {% block head %}
     {% endblock %}
   </head>
-  <body class="bg-stone-800 text-white">
+  <body class="min-h-screen text-ink">
 
     {% include "./navbar.html" %}
 
