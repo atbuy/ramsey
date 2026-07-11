@@ -1,14 +1,8 @@
-<nav class="flex items-center gap-6 sm:gap-10 px-6 py-4 bg-surface-deep/80 border-b-4 border-double border-accent/50">
-  <a href="/" class="font-brand text-3xl text-accent tracking-wider whitespace-nowrap">Ramsey</a>
-  <div class="relative w-full max-w-xl">
-    <input type="text" id="search" placeholder="Search for a movie or show..." name="search" hx-get="/search"
-      hx-trigger="input changed delay:750ms, search" hx-target="#search-results"
-      class="w-full bg-transparent border-b-2 border-accent/40 focus:border-accent text-ink placeholder-muted/70 p-2 outline-none transition duration-200 ease-in-out" />
-    <div id="search-results"
-      class="hidden absolute left-0 right-0 top-full mt-2 z-50 rounded-lg border border-accent/30 bg-surface shadow-2xl shadow-black/70 p-2 max-h-[70vh] overflow-y-auto">
-    </div>
-  </div>
-  <div class="ml-auto flex items-center gap-5 shrink-0">
+<nav
+  class="sticky top-0 z-40 flex flex-wrap items-center gap-x-6 gap-y-2 sm:gap-x-10 px-4 sm:px-6 py-3 sm:py-4 bg-surface-deep/80 backdrop-blur-sm border-b-4 border-double border-accent/50">
+  <a href="/" class="order-1 font-brand text-2xl sm:text-3xl text-accent tracking-wider whitespace-nowrap">Ramsey</a>
+
+  <div class="order-2 sm:order-3 ml-auto flex items-center gap-4 sm:gap-5 shrink-0">
     <a href="/stats" class="text-muted hover:text-accent transition">Stats</a>
     <select id="theme-picker" title="Theme"
       class="appearance-none bg-surface-deep text-muted border border-accent/40 rounded-md text-sm py-1.5 px-3 outline-none cursor-pointer hover:border-accent transition">
@@ -17,5 +11,14 @@
       <option value="noir">Noir</option>
       <option value="chef">Chef's Table</option>
     </select>
+  </div>
+
+  <div class="order-3 sm:order-2 relative w-full sm:w-auto sm:flex-1 sm:max-w-xl">
+    <input type="text" id="search" placeholder="Search for a movie or show..." name="search" hx-get="/search"
+      hx-trigger="input changed delay:750ms, search" hx-target="#search-results"
+      class="w-full bg-transparent border-b-2 border-accent/40 focus:border-accent text-ink placeholder-muted/70 p-2 outline-none transition duration-200 ease-in-out" />
+    <div id="search-results"
+      class="hidden absolute left-0 right-0 top-full mt-2 z-50 rounded-lg border border-accent/30 bg-surface shadow-2xl shadow-black/70 p-2 max-h-[70vh] overflow-y-auto">
+    </div>
   </div>
 </nav>
