@@ -1,11 +1,11 @@
 upgrade:
-	pip install --upgrade pip setuptools wheel
+	pip install --upgrade pip setuptools
 
 install: upgrade
-	pip install -e .
+	uv sync --frozen --no-dev
 
 install-dev: upgrade
-	pip install -e '.[dev]'
+	uv sync --frozen --extra dev
 	pre-commit install
 
 install-all: upgrade install-dev
