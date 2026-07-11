@@ -1,6 +1,7 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/70" onclick="document.getElementById('modal').replaceChildren()"></div>
-  <div class="relative flex gap-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl bg-surface border border-accent/30 shadow-2xl shadow-black/70 p-6">
+  <div role="dialog" aria-modal="true" aria-label="{{ movie.title }}"
+    class="relative flex gap-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl bg-surface border border-accent/30 shadow-2xl shadow-black/70 p-6">
     <img src="{{ movie.image }}" alt="{{ movie.title }} poster"
       class="hidden sm:block w-44 aspect-[2/3] object-cover rounded-lg self-start" />
 

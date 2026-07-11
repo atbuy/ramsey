@@ -48,6 +48,44 @@ document.body.addEventListener("ramsey:toast", (event) => {
   showToast(event.detail.value);
 });
 
+// Lock page scrolling and trap focus while the detail view is open
+const modal = document.getElementById("modal");
+let modalOpen = false;
+
+const modalFocusables = () =>
+  [...modal.querySelectorAll("a[href], button, input, textarea, select")];
+
+const syncModal = () => {
+  const open = modal.childElementCount > 0;
+  document.body.classList.toggle("overflow-hidden", open);
+  if (open && !modalOpen) {
+    (modal.querySelector('[title="Close"]') || modalFocusables()[0])?.focus();
+  }
+  modalOpen = open;
+};
+
+new MutationObserver(syncModal).observe(modal, { childList: true });
+
+document.addEventListener("keydown", (event) => {
+  if (!modalOpen || event.key !== "Tab") return;
+
+  const items = modalFocusables();
+  if (!items.length) return;
+
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  } else if (!modal.contains(document.activeElement)) {
+    event.preventDefault();
+    first.focus();
+  }
+});
+
 // Replace the native hx-confirm dialog with a themed one
 const confirmBox = document.getElementById("confirm");
 const confirmQuestion = document.getElementById("confirm-question");
