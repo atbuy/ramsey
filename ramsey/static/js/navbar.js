@@ -48,6 +48,34 @@ document.body.addEventListener("ramsey:toast", (event) => {
   showToast(event.detail.value);
 });
 
+// Replace the native hx-confirm dialog with a themed one
+const confirmBox = document.getElementById("confirm");
+const confirmQuestion = document.getElementById("confirm-question");
+let confirmAction = null;
+
+const closeConfirm = () => {
+  confirmBox.classList.add("hidden");
+  confirmAction = null;
+};
+
+document.body.addEventListener("htmx:confirm", (event) => {
+  if (!event.detail.question) return;
+
+  event.preventDefault();
+  confirmQuestion.textContent = event.detail.question;
+  confirmAction = () => event.detail.issueRequest(true);
+  confirmBox.classList.remove("hidden");
+  document.getElementById("confirm-ok").focus();
+});
+
+document.getElementById("confirm-ok").addEventListener("click", () => {
+  const action = confirmAction;
+  closeConfirm();
+  action?.();
+});
+document.getElementById("confirm-cancel").addEventListener("click", closeConfirm);
+document.getElementById("confirm-backdrop").addEventListener("click", closeConfirm);
+
 // Filter the library cards by title, entirely client side
 const applyLibraryFilter = () => {
   if (!libraryFilter) return;
@@ -141,6 +169,7 @@ document.addEventListener("keyup", (event) => {
   if (event.code === "Escape") {
     search.blur();
     hideResults();
+    closeConfirm();
     document.getElementById("modal").replaceChildren();
   }
 });

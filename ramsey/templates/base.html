@@ -247,6 +247,23 @@
       class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none">
     </div>
 
+    <div id="confirm" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4">
+      <div id="confirm-backdrop" class="absolute inset-0 bg-black/70"></div>
+      <div class="relative w-full max-w-sm rounded-xl bg-surface border border-accent/30 shadow-2xl shadow-black/70 p-6">
+        <div id="confirm-question" class="font-display text-lg text-ink leading-snug"></div>
+        <div class="flex justify-end gap-3 mt-6">
+          <button id="confirm-cancel"
+            class="rounded-md border border-accent/40 text-muted px-4 py-1.5 hover:text-ink hover:border-accent transition text-sm">
+            Cancel
+          </button>
+          <button id="confirm-ok"
+            class="rounded-md bg-danger/80 hover:bg-danger text-white px-4 py-1.5 transition text-sm">
+            Remove
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="{{ static_url('js/navbar.js') }}" defer></script>
 
     {% block scripts %}
