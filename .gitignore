@@ -7,3 +7,6 @@ build
 
 # Environment configuration
 .env*
+
+# Local DB
+*.db
