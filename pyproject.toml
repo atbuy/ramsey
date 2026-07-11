@@ -24,7 +24,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pre-commit==4.0.1", "ruff==0.8.0"]
+dev = ["prek==0.4.9", "ruff==0.15.21"]
 
 [tool.setuptools]
 packages = ["ramsey"]

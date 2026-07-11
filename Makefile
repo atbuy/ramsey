@@ -1,3 +1,9 @@
+lock:
+	uv lock
+
+dep-update:
+	uv lock --upgrade-package $(pkg)
+
 upgrade:
 	pip install --upgrade pip setuptools
 
@@ -6,7 +12,7 @@ install: upgrade
 
 install-dev: upgrade
 	uv sync --frozen --extra dev
-	pre-commit install
+	prek install --overwrite
 
 install-all: upgrade install-dev
 
