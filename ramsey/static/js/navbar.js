@@ -48,6 +48,12 @@ document.body.addEventListener("ramsey:toast", (event) => {
   showToast(event.detail.value);
 });
 
+// Open a random pick right away when launched from the PWA shortcut
+if (new URLSearchParams(location.search).has("pick")) {
+  history.replaceState(null, "", location.pathname);
+  htmx.ajax("GET", "/watchlist/pick", "#modal");
+}
+
 // Lock page scrolling and trap focus while the detail view is open
 const modal = document.getElementById("modal");
 let modalOpen = false;

@@ -25,6 +25,32 @@
   "name": "Ramsey",
   "scope": "/",
   "short_name": "Ramsey",
+  "shortcuts": [
+    {
+      "description": "Open a random movie from the watchlist",
+      "icons": [
+        {
+          "sizes": "96x96",
+          "src": "/static/images/shortcut-pick.png",
+          "type": "image/png"
+        }
+      ],
+      "name": "Pick for me",
+      "url": "/?pick"
+    },
+    {
+      "description": "Your watching statistics",
+      "icons": [
+        {
+          "sizes": "96x96",
+          "src": "/static/images/shortcut-stats.png",
+          "type": "image/png"
+        }
+      ],
+      "name": "Stats",
+      "url": "/stats"
+    }
+  ],
   "start_url": "/",
   "theme_color": "#160b0e"
 }
