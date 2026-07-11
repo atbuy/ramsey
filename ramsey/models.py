@@ -12,3 +12,7 @@ class APISaveMovie(BaseModel):
 class APIUpdateMovie(BaseModel):
     identifier: str
     action: str
+
+
+class APIDeleteMovie(BaseModel):
+    identifier: str

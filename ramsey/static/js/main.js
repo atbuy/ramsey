@@ -8,10 +8,22 @@ const updateWatched = async (movie, direction) => {
 
   const json = await response.json();
   if (json.status === 200) {
-    console.log("Updated amount");
+    window.location.reload();
+  }
+};
 
-    if (json.data.new_amount <= 0) {
-      window.location.reload();
-    }
+const deleteMovie = async (movie) => {
+  // Delete a movie and its watch history
+  if (!confirm("Remove this movie and its watch history?")) return;
+
+  const response = await fetch("/api/delete-movie", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ identifier: movie }),
+  });
+
+  const json = await response.json();
+  if (json.status === 200) {
+    window.location.reload();
   }
 };

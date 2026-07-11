@@ -5,6 +5,10 @@ services:
     ports:
       - "8000:8000"
     env_file: .env
+    environment:
+      RAMSEY_DATABASE__PATH: /data/ramsey.db
+    volumes:
+      - db:/data
     restart: unless-stopped
     container_name: ramsey
 
@@ -24,4 +28,6 @@ services:
 
 volumes:
   cache:
+    driver: local
+  db:
     driver: local

@@ -14,23 +14,33 @@
 
   {% if in_index %}
   <div class="flex flex-col flex-wrap text-gray-400">
+    <span>First watched: {{ movie.first_watched }}</span>
+    {% if movie.rewatches %}
+    <span>Rewatched: {{ movie.rewatches | join(", ") }}</span>
+    {% endif %}
     <div class="flex items-center justify-start">
       <div>
         <span>Times Watched:</span>
-        <span id="watched-{{ movie.identifier }}">{{ movie.times_watched }}</span>
+        <span>{{ movie.times_watched }}</span>
       </div>
       <div class="flex items-center justify-start">
-        <button onclick="updateWatched('{{ movie.identifier }}', 'inc')"
+        <button onclick="updateWatched('{{ movie.id }}', 'inc')"
           class="border border-green-300 rounded-md p-2 mx-2">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="10px" height="10px" style="fill: white">
             <path
               d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 144L48 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l144 0 0 144c0 17.7 14.3 32 32 32s32-14.3 32-32l0-144 144 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-144 0 0-144z" />
           </svg>
         </button>
-        <button onclick="updateWatched('{{ movie.identifier }}', 'dec')" class="border border-red-300 rounded-md p-2">
+        <button onclick="updateWatched('{{ movie.id }}', 'dec')" class="border border-red-300 rounded-md p-2">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="10px" height="10px" style="fill: white">
             <path
               d="M432 256c0 17.7-14.3 32-32 32L48 288c-17.7 0-32-14.3-32-32s14.3-32 32-32l352 0c17.7 0 32 14.3 32 32z" />
+          </svg>
+        </button>
+        <button onclick="deleteMovie('{{ movie.id }}')" class="border border-red-500 rounded-md p-2 mx-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="10px" height="10px" style="fill: white">
+            <path
+              d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.4 21.3 19.1 37 40.4 37l260.8 0c21.3 0 39-15.7 40.4-37L416 128z" />
           </svg>
         </button>
       </div>
