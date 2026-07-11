@@ -1,5 +1,7 @@
+import hashlib
 import json
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
@@ -23,6 +25,17 @@ templates = Jinja2Templates(template_path)
 # Start serving static files
 static_path = cwd.joinpath("static")
 app.mount("/static", StaticFiles(directory=static_path), name="static")
+
+
+@lru_cache(maxsize=None)
+def static_url(path: str) -> str:
+    """Build a static file URL with a content hash to bust browser caches."""
+
+    digest = hashlib.md5(static_path.joinpath(path).read_bytes()).hexdigest()[:8]
+    return f"/static/{path}?v={digest}"
+
+
+templates.env.globals["static_url"] = static_url
 
 # Initialize redis connection
 redis = get_redis()
