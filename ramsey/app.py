@@ -149,20 +149,40 @@ def render_detail(movie_id: str, pick: bool = False) -> str:
     )
 
 
-def respond(request: Request, movie_id: str | None = None):
+def respond(
+    request: Request,
+    movie_id: str | None = None,
+    toast: str | None = None,
+):
     """Render the fragments htmx expects, based on the triggering element.
 
     Changes made from the detail view get an updated detail fragment plus
     the library as an out-of-band swap; everything else gets the library.
+    A toast message is delivered through the HX-Trigger response header.
     """
 
     if request.headers.get("hx-target") == "modal":
         detail = ""
         if movie_id and db.get_movie(movie_id) is not None:
             detail = render_detail(movie_id)
-        return HTMLResponse(detail + render_library(request, oob=True))
+        response = HTMLResponse(detail + render_library(request, oob=True))
+    else:
+        response = HTMLResponse(render_library(request))
 
-    return HTMLResponse(render_library(request))
+    if toast:
+        response.headers["HX-Trigger"] = json.dumps({"ramsey:toast": toast})
+
+    return response
+
+
+def watch_removed_toast(movie_id: str) -> str:
+    """Describe a removed watch, noting when the movie leaves the watched list."""
+
+    movie = db.get_movie(movie_id)
+    if not db.get_watches(movie_id):
+        return f"Moved {movie['title']} to the watchlist"
+
+    return f"Watch removed: {movie['title']}"
 
 
 def month_buckets(count: int = 12) -> list[tuple[int, int]]:
@@ -414,12 +434,16 @@ async def movie_detail(movie_id: str):
 async def save_movie(request: Request, movie_id: str):
     """Store a watched movie, or record a rewatch if it is already stored."""
 
-    if db.get_movie(movie_id) is None:
+    existing = db.get_movie(movie_id)
+    if existing is None:
         save_from_search(movie_id)
 
     db.add_watch(movie_id)
 
-    return respond(request, movie_id)
+    title = db.get_movie(movie_id)["title"]
+    toast = f"Rewatch logged: {title}" if existing else f"Added {title}"
+
+    return respond(request, movie_id, toast)
 
 
 @app.get("/watchlist/pick")
@@ -445,10 +469,12 @@ async def pick_from_watchlist(request: Request):
 async def add_to_watchlist(request: Request, movie_id: str):
     """Store a movie to watch later, without a watch date."""
 
+    toast = None
     if db.get_movie(movie_id) is None:
         save_from_search(movie_id)
+        toast = f"Added {db.get_movie(movie_id)['title']} to the watchlist"
 
-    return respond(request, movie_id)
+    return respond(request, movie_id, toast)
 
 
 @app.post("/movies/{movie_id}/watch")
@@ -470,7 +496,11 @@ async def watch_movie(request: Request, movie_id: str):
 
     db.add_watch(movie_id, watched_at)
 
-    return respond(request, movie_id)
+    toast = f"Watch logged: {db.get_movie(movie_id)['title']}"
+    if watched_at:
+        toast += f" on {format_date(watched_at)}"
+
+    return respond(request, movie_id, toast)
 
 
 @app.delete("/movies/{movie_id}/watch")
@@ -485,7 +515,7 @@ async def unwatch_movie(request: Request, movie_id: str):
 
     db.remove_latest_watch(movie_id)
 
-    return respond(request, movie_id)
+    return respond(request, movie_id, watch_removed_toast(movie_id))
 
 
 @app.delete("/watches/{watch_id}")
@@ -498,7 +528,7 @@ async def delete_watch(request: Request, watch_id: int):
 
     db.delete_watch(watch_id)
 
-    return respond(request, watch["movie_id"])
+    return respond(request, watch["movie_id"], watch_removed_toast(watch["movie_id"]))
 
 
 @app.put("/movies/{movie_id}/notes")
@@ -512,7 +542,7 @@ async def update_notes(request: Request, movie_id: str):
     notes = str(form.get("notes") or "").strip() or None
     db.set_notes(movie_id, notes)
 
-    return respond(request, movie_id)
+    return respond(request, movie_id, "Notes saved" if notes else "Notes cleared")
 
 
 @app.put("/movies/{movie_id}/rating/{rating}")
@@ -527,7 +557,9 @@ async def rate_movie(request: Request, movie_id: str, rating: int):
 
     db.set_rating(movie_id, rating)
 
-    return respond(request, movie_id)
+    toast = f"Rated {db.get_movie(movie_id)['title']} {rating}/10"
+
+    return respond(request, movie_id, toast)
 
 
 @app.delete("/movies/{movie_id}/rating")
@@ -539,16 +571,19 @@ async def unrate_movie(request: Request, movie_id: str):
 
     db.set_rating(movie_id, None)
 
-    return respond(request, movie_id)
+    toast = f"Rating cleared: {db.get_movie(movie_id)['title']}"
+
+    return respond(request, movie_id, toast)
 
 
 @app.delete("/movies/{movie_id}")
 async def remove_movie(request: Request, movie_id: str):
     """Delete a movie, its watch history and notes."""
 
-    if db.get_movie(movie_id) is None:
+    movie = db.get_movie(movie_id)
+    if movie is None:
         raise HTTPException(404, "Movie not found")
 
     db.delete_movie(movie_id)
 
-    return respond(request)
+    return respond(request, toast=f"Removed {movie['title']}")

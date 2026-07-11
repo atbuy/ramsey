@@ -26,6 +26,28 @@ themePicker.addEventListener("change", () => {
   applyThemeColor();
 });
 
+// Show short feedback toasts, sent by the server in HX-Trigger headers
+const toasts = document.getElementById("toasts");
+
+const showToast = (message) => {
+  const toast = document.createElement("div");
+  toast.textContent = message;
+  toast.className =
+    "rounded-full bg-surface border border-accent/40 text-ink text-sm px-4 py-2 " +
+    "shadow-lg shadow-black/40 transition duration-300 opacity-0 translate-y-2";
+  toasts.append(toast);
+
+  requestAnimationFrame(() => toast.classList.remove("opacity-0", "translate-y-2"));
+  setTimeout(() => {
+    toast.classList.add("opacity-0", "translate-y-2");
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
+};
+
+document.body.addEventListener("ramsey:toast", (event) => {
+  showToast(event.detail.value);
+});
+
 // Filter the library cards by title, entirely client side
 const applyLibraryFilter = () => {
   if (!libraryFilter) return;
