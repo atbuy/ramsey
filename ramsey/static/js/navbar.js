@@ -1,69 +1,45 @@
 const search = document.getElementById("search");
 const searchResults = document.getElementById("search-results");
 
-// Check periodically if the results should be hidden
-setInterval(() => {
-  if (searchResults.textContent.trim() !== "") {
-    searchResults.classList.add("show-results");
-    searchResults.classList.remove("hidden");
-    return;
+const showResults = () => searchResults.classList.remove("hidden");
+const hideResults = () => searchResults.classList.add("hidden");
+
+// Show the dropdown when a search returns results, and hide it
+// after a movie is saved from the results
+document.body.addEventListener("htmx:afterSwap", (event) => {
+  if (event.detail.target === searchResults) {
+    if (searchResults.textContent.trim() !== "") {
+      showResults();
+    } else {
+      hideResults();
+    }
+  } else if (event.detail.target.id === "watched-list") {
+    hideResults();
   }
-}, 20);
+});
 
 search.addEventListener("focus", () => {
   if (searchResults.textContent.trim() !== "") {
-    searchResults.classList.add("show-results");
-    searchResults.classList.remove("hidden");
+    showResults();
   }
 });
 
-search.addEventListener("focusout", () => {
-  searchResults.classList.remove("show-results");
-  searchResults.classList.add("hidden");
-});
-
-search.addEventListener("input", () => {
-  if (search.value.trim() !== "") {
-    searchResults.classList.add("show-results");
-    searchResults.classList.remove("hidden");
-  } else {
-    searchResults.classList.remove("show-results");
-    searchResults.classList.add("hidden");
+// Hide the dropdown when clicking outside the search bar and results
+document.addEventListener("mousedown", (event) => {
+  if (event.target !== search && !searchResults.contains(event.target)) {
+    hideResults();
   }
 });
 
-// Add '/' as a shortcut for the search bar
-document.addEventListener(
-  "keyup",
-  (event) => {
-    if (event.code === "Slash") {
-      event.preventDefault();
-      search.focus();
-      return;
-    }
-
-    if (event.code === "Escape") {
-      console.log("escape pressed");
-      event.preventDefault();
-      search.parentElement.focus();
-      return;
-    }
-  },
-  false,
-);
-
-const storeMovieResult = async (movie) => {
-  response = await fetch("/api/save-movie", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ identifier: movie }),
-  });
-  json = await response.json();
-
-  if (json.status === 200) {
-    console.log("Movie saved!");
-    window.location.reload();
+// Add '/' as a shortcut for the search bar, and Escape to close the results
+document.addEventListener("keyup", (event) => {
+  if (event.code === "Slash") {
+    search.focus();
+    return;
   }
-};
+
+  if (event.code === "Escape") {
+    search.blur();
+    hideResults();
+  }
+});

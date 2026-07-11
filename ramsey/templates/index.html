@@ -8,11 +8,7 @@ Ramsey
 <div class="mt-4 max-w-full p-2 flex items-center justify-center">
   <div class="px-5 w-full">
     <div class="text-xl my-4 w-full font-semibold border-b-2 border-white">Watched</div>
-    <div class="px-4 py-5 flex flex-row flex-wrap">
-      {% for movie in watched %}
-        {% include "./components/movie.html" %}
-      {% endfor %}
-    </div>
+    {% include "./components/watched.html" %}
   </div>
 </div>
 {% endblock %}

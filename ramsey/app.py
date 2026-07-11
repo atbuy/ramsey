@@ -8,7 +8,6 @@ from fastapi.templating import Jinja2Templates
 
 from ramsey import db
 from ramsey.cache import get_redis
-from ramsey.models import APIDeleteMovie, APISaveMovie, APIUpdateMovie, SearchQuery
 from ramsey.parsing import search_query
 from ramsey.settings import get_settings
 
@@ -33,11 +32,9 @@ def format_date(timestamp: float) -> str:
     return datetime.fromtimestamp(timestamp).strftime("%b %d, %Y")
 
 
-@app.get("/")
-async def home(request: Request):
-    """Show index page."""
+def get_watched() -> list[dict]:
+    """Get all watched movies with their formatted watch dates."""
 
-    # Get all watched movies with their watch dates and display them
     watched = []
     for movie in db.get_watched():
         dates = movie.pop("watch_dates")
@@ -46,16 +43,30 @@ async def home(request: Request):
         movie["rewatches"] = [format_date(date) for date in dates[1:]]
         watched.append(movie)
 
-    context = {"watched": watched, "in_index": True}
+    return watched
+
+
+def render_watched(request: Request):
+    """Render the watched list fragment, swapped in after every change."""
+
+    context = {"watched": get_watched(), "in_index": True}
+    return templates.TemplateResponse(request, "components/watched.html", context)
+
+
+@app.get("/")
+async def home(request: Request):
+    """Show index page."""
+
+    context = {"watched": get_watched(), "in_index": True}
 
     return templates.TemplateResponse(request, "index.html", context)
 
 
-@app.post("/search")
-async def search(request: Request, query: SearchQuery):
+@app.get("/search")
+async def search(request: Request, search: str = ""):
     """Search for movies and shows with the given query."""
 
-    term = query.search.strip()
+    term = search.strip()
 
     # Quickly respond with an empty component if no query was given
     if term == "":
@@ -93,59 +104,56 @@ async def search(request: Request, query: SearchQuery):
     return render
 
 
-@app.post("/api/save-movie")
-async def api_save_movie(movie: APISaveMovie):
-    """Store a watched movie with its first watch date."""
+@app.post("/movies/{movie_id}")
+async def save_movie(request: Request, movie_id: str):
+    """Store a watched movie, or record a rewatch if it is already stored."""
 
-    # Saving an already stored movie counts as a rewatch
-    if db.get_movie(movie.identifier) is not None:
-        db.add_watch(movie.identifier)
-        return {"status": 200, "message": "OK"}
+    if db.get_movie(movie_id) is not None:
+        db.add_watch(movie_id)
+        return render_watched(request)
 
     # Get the movie data from the cached search results
-    cached = redis.get(f"{settings.redis.movie_prefix}:{movie.identifier}")
+    cached = redis.get(f"{settings.redis.movie_prefix}:{movie_id}")
     if cached is None:
         raise HTTPException(404, "Movie not found in recent search results")
 
     db.insert_movie(json.loads(cached))
-    db.add_watch(movie.identifier)
+    db.add_watch(movie_id)
 
-    return {"status": 200, "message": "OK"}
+    return render_watched(request)
 
 
-@app.patch("/api/update-movie")
-async def api_update_movie(movie: APIUpdateMovie):
-    """Record a rewatch, or undo the most recent one."""
+@app.post("/movies/{movie_id}/watch")
+async def watch_movie(request: Request, movie_id: str):
+    """Record a rewatch."""
 
-    if db.get_movie(movie.identifier) is None:
+    if db.get_movie(movie_id) is None:
         raise HTTPException(404, "Movie not found")
 
-    if movie.action == "inc":
-        db.add_watch(movie.identifier)
-    elif movie.action == "dec":
-        # The first watch can only be removed by deleting the movie
-        db.remove_latest_watch(movie.identifier)
-    else:
-        raise HTTPException(400, f"Unknown action: {movie.action}")
+    db.add_watch(movie_id)
 
-    new_amount = db.count_watches(movie.identifier)
-
-    response = {
-        "status": 200,
-        "message": "OK",
-        "data": {"new_amount": new_amount},
-    }
-
-    return response
+    return render_watched(request)
 
 
-@app.delete("/api/delete-movie")
-async def api_delete_movie(movie: APIDeleteMovie):
+@app.delete("/movies/{movie_id}/watch")
+async def unwatch_movie(request: Request, movie_id: str):
+    """Undo the most recent rewatch, always keeping the first watch."""
+
+    if db.get_movie(movie_id) is None:
+        raise HTTPException(404, "Movie not found")
+
+    db.remove_latest_watch(movie_id)
+
+    return render_watched(request)
+
+
+@app.delete("/movies/{movie_id}")
+async def remove_movie(request: Request, movie_id: str):
     """Delete a movie and its watch history."""
 
-    if db.get_movie(movie.identifier) is None:
+    if db.get_movie(movie_id) is None:
         raise HTTPException(404, "Movie not found")
 
-    db.delete_movie(movie.identifier)
+    db.delete_movie(movie_id)
 
-    return {"status": 200, "message": "OK"}
+    return render_watched(request)
