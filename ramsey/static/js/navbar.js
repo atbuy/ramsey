@@ -1,7 +1,6 @@
 const search = document.getElementById("search");
 const searchResults = document.getElementById("search-results");
 const themePicker = document.getElementById("theme-picker");
-const libraryFilter = document.getElementById("library-filter");
 
 const showResults = () => searchResults.classList.remove("hidden");
 const hideResults = () => searchResults.classList.add("hidden");
@@ -120,26 +119,6 @@ document.getElementById("confirm-ok").addEventListener("click", () => {
 document.getElementById("confirm-cancel").addEventListener("click", closeConfirm);
 document.getElementById("confirm-backdrop").addEventListener("click", closeConfirm);
 
-// Filter the library cards by title, entirely client side
-const applyLibraryFilter = () => {
-  if (!libraryFilter) return;
-
-  const term = libraryFilter.value.trim().toLowerCase();
-  const cards = [...document.querySelectorAll("#library [data-title]")];
-
-  let visible = 0;
-  for (const card of cards) {
-    const match = !term || card.dataset.title.includes(term);
-    card.classList.toggle("hidden", !match);
-    if (match) visible += 1;
-  }
-
-  const empty = document.getElementById("library-filter-empty");
-  empty.classList.toggle("hidden", visible > 0 || !term || !cards.length);
-};
-
-libraryFilter?.addEventListener("input", applyLibraryFilter);
-
 // Keyboard navigation for the search results
 let activeRow = -1;
 
@@ -185,7 +164,6 @@ document.body.addEventListener("htmx:afterSwap", (event) => {
     }
   } else if (event.detail.target.id === "library") {
     hideResults();
-    applyLibraryFilter();
   }
 });
 

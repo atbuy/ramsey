@@ -47,37 +47,24 @@
     <span class="text-accent/70 text-xl">{% if view == "watched" %}&#9733;{% else %}&#9734;{% endif %}</span>
   </div>
 
-  {% if view == "watchlist" %}
-  {% if watchlist %}
+  {% set items = watchlist if view == "watchlist" else watched %}
+  {% if items %}
   <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-    {% for movie in watchlist %}
-      {% include "./components/watchlist_movie.html" %}
-    {% endfor %}
+    {% with page = items[:page_size],
+      next_offset = (page_size if items | length > page_size else none),
+      card = "./components/watchlist_movie.html" if view == "watchlist" else "./components/movie.html" %}
+    {% include "./components/movie_page.html" %}
+    {% endwith %}
   </div>
-  {% else %}
+  {% elif type_filter != "all" or q %}
+  <div class="text-center text-muted py-20">Nothing here matches your filters.</div>
+  {% elif view == "watchlist" %}
   <div class="text-center text-muted py-20">
-    {% if type_filter != "all" %}
-    Nothing on your watchlist matches this filter.
-    {% else %}
     Your watchlist is empty &mdash; bookmark titles from the search results.
-    {% endif %}
-  </div>
-  {% endif %}
-  {% else %}
-  {% if watched %}
-  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-    {% for movie in watched %}
-      {% include "./components/movie.html" %}
-    {% endfor %}
   </div>
   {% else %}
   <div class="text-center text-muted py-20">
-    {% if type_filter != "all" %}
-    Nothing in your watched list matches this filter.
-    {% else %}
     Nothing on the marquee yet &mdash; search above to log your first movie.
-    {% endif %}
   </div>
-  {% endif %}
   {% endif %}
 </div>

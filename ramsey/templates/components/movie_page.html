@@ -1,0 +1,11 @@
+{# One page of library cards, plus the sentinel that loads the next page
+   when it scrolls into view. #}
+{% for movie in page %}
+{% include card %}
+{% endfor %}
+{% if next_offset %}
+<div hx-get="/library/page?offset={{ next_offset }}" hx-trigger="revealed" hx-swap="outerHTML"
+  class="col-span-full flex justify-center py-6">
+  <div class="w-6 h-6 border-2 border-accent/30 border-t-accent rounded-full animate-spin"></div>
+</div>
+{% endif %}

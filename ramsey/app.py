@@ -77,6 +77,9 @@ TYPE_FILTERS = ("all", "movies", "shows")
 SORTS = ("watched", "rating", "times", "title")
 VIEWS = ("watched", "watchlist")
 
+# Cards rendered per library page; scrolling loads the next batch
+PAGE_SIZE = 24
+
 # Initialize redis connection
 redis = get_redis()
 
@@ -99,6 +102,16 @@ def library_prefs(request: Request) -> tuple[str, str, str]:
     return type_filter, sort, view
 
 
+def library_query(request: Request) -> str:
+    """Get the free-text title filter, from the query or its cookie."""
+
+    q = request.query_params.get("q")
+    if q is None:
+        q = request.cookies.get("library-q") or ""
+
+    return q.strip().lower()[:100]
+
+
 def matches_filter(movie: dict, type_filter: str) -> bool:
     if type_filter == "movies":
         return movie["type"] == "movie"
@@ -111,11 +124,14 @@ def library_context(request: Request) -> dict:
     """Split all movies into the watched list and the watchlist."""
 
     type_filter, sort, view = library_prefs(request)
+    q = library_query(request)
 
     watched = []
     watchlist = []
     for movie in db.get_movies():
         if not matches_filter(movie, type_filter):
+            continue
+        if q and q not in movie["title"].lower():
             continue
 
         dates = movie.pop("watch_dates")
@@ -144,6 +160,8 @@ def library_context(request: Request) -> dict:
         "type_filter": type_filter,
         "sort": sort,
         "view": view,
+        "q": q,
+        "page_size": PAGE_SIZE,
     }
 
 
@@ -310,8 +328,35 @@ async def library(request: Request):
     response.set_cookie("library-type", type_filter, max_age=year)
     response.set_cookie("library-sort", sort, max_age=year)
     response.set_cookie("library-view", view, max_age=year)
+    response.set_cookie("library-q", library_query(request), max_age=year)
 
     return response
+
+
+@app.get("/library/page")
+async def library_page(request: Request, offset: int = 0):
+    """Load the next page of cards for the active library tab."""
+
+    offset = max(0, offset)
+    context = library_context(request)
+
+    if context["view"] == "watchlist":
+        items = context["watchlist"]
+        card = "./components/watchlist_movie.html"
+    else:
+        items = context["watched"]
+        card = "./components/movie.html"
+
+    next_offset = offset + PAGE_SIZE
+    html = templates.get_template("components/movie_page.html").render(
+        {
+            "page": items[offset:next_offset],
+            "next_offset": next_offset if len(items) > next_offset else None,
+            "card": card,
+        }
+    )
+
+    return HTMLResponse(html)
 
 
 @app.get("/stats")
