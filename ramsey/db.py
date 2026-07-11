@@ -110,6 +110,14 @@ def remove_latest_watch(movie_id: str) -> bool:
     return True
 
 
+def set_rating(movie_id: str, rating: int | None) -> None:
+    """Set or clear the rating of a movie."""
+
+    db = get_db()
+    db.execute("UPDATE movies SET rating = ? WHERE id = ?", (rating, movie_id))
+    db.commit()
+
+
 def delete_movie(movie_id: str) -> None:
     """Delete a movie and all of its watch events."""
 

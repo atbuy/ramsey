@@ -147,6 +147,33 @@ async def unwatch_movie(request: Request, movie_id: str):
     return render_watched(request)
 
 
+@app.put("/movies/{movie_id}/rating/{rating}")
+async def rate_movie(request: Request, movie_id: str, rating: int):
+    """Rate a movie from 1 to 10."""
+
+    if not 1 <= rating <= 10:
+        raise HTTPException(400, "Rating must be between 1 and 10")
+
+    if db.get_movie(movie_id) is None:
+        raise HTTPException(404, "Movie not found")
+
+    db.set_rating(movie_id, rating)
+
+    return render_watched(request)
+
+
+@app.delete("/movies/{movie_id}/rating")
+async def unrate_movie(request: Request, movie_id: str):
+    """Clear the rating of a movie."""
+
+    if db.get_movie(movie_id) is None:
+        raise HTTPException(404, "Movie not found")
+
+    db.set_rating(movie_id, None)
+
+    return render_watched(request)
+
+
 @app.delete("/movies/{movie_id}")
 async def remove_movie(request: Request, movie_id: str):
     """Delete a movie and its watch history."""
