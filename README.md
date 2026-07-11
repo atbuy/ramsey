@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="ramsey/static/images/logo.svg" width="160" alt="Ramsey logo">
+</p>
+
 # ramsey
 
 Movie critic application. Rate and keep track of what movies and shows you have seen.
