@@ -4,7 +4,7 @@
     <img src="{{ movie.image }}" alt="{{ movie.title }} poster" loading="lazy"
       class="w-full aspect-[2/3] object-cover" />
     {% set label = kind(movie.type) %}
-    {% if label and label != "Movie" %}
+    {% if label %}
     <span class="absolute top-2 left-2 rounded-full bg-black/70 border border-accent/60 text-white text-xs px-2 py-1">
       {{ label }}
     </span>
