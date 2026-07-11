@@ -5,7 +5,10 @@
     <div class="relative flex items-end gap-[2px] h-40">
       {% for item in chart["items"] %}
       <div tabindex="0" aria-label="{{ item.label }}: {{ item.count }} {{ unit }}"
-        class="group relative flex-1 h-full flex flex-col justify-end items-center outline-none">
+        {% if item.url and item.count %}
+        hx-get="{{ item.url }}" hx-target="#drilldown" hx-trigger="click, keyup[key=='Enter']"
+        {% endif %}
+        class="group relative flex-1 h-full flex flex-col justify-end items-center outline-none{% if item.url and item.count %} cursor-pointer{% endif %}">
         <div
           class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition rounded-md border border-accent/30 bg-surface-deep px-2 py-1 text-xs whitespace-nowrap shadow-lg shadow-black/30">
           <span class="text-ink font-semibold">{{ item.count }}</span>

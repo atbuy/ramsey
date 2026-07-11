@@ -1,0 +1,27 @@
+<div class="rounded-lg bg-surface border border-accent/20 p-5 mt-5">
+  <div class="flex items-center justify-between mb-2">
+    <div class="font-display text-lg text-ink">{{ heading }}</div>
+    <button onclick="document.getElementById('drilldown').replaceChildren()" title="Close"
+      class="text-muted hover:text-ink text-xl leading-none px-2">&times;</button>
+  </div>
+  {% if movies %}
+  <ul class="flex flex-col divide-y divide-accent/10">
+    {% for movie in movies %}
+    <li class="flex items-center gap-3 py-2">
+      <img src="{{ movie.image }}" alt="{{ movie.title }} poster" loading="lazy"
+        class="w-8 h-11 object-cover rounded shadow shrink-0" />
+      <div class="flex flex-col min-w-0 flex-1">
+        <span class="text-ink truncate cursor-pointer hover:text-accent transition"
+          hx-get="/movies/{{ movie.id }}" hx-target="#modal">{{ movie.title }}</span>
+        <span class="text-muted text-sm truncate">{{ movie.detail }}</span>
+      </div>
+      {% if movie.rating %}
+      <span class="text-muted text-sm shrink-0">{{ movie.rating }}/10</span>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="text-muted py-6 text-center">Nothing here.</div>
+  {% endif %}
+</div>

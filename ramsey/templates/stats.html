@@ -40,7 +40,7 @@ Ramsey &middot; Stats
   <div class="grid lg:grid-cols-2 gap-5 mt-5">
     <div class="rounded-lg bg-surface border border-accent/20 p-5">
       <div class="font-display text-lg text-ink">Watches per month</div>
-      <div class="text-muted text-sm">Last 12 months</div>
+      <div class="text-muted text-sm">Last 12 months &middot; click a column for the titles</div>
       {% if months.max %}
       {% with chart = months, unit = "watches", dimension = "Month" %}
       {% include "./components/column_chart.html" %}
@@ -52,7 +52,7 @@ Ramsey &middot; Stats
 
     <div class="rounded-lg bg-surface border border-accent/20 p-5">
       <div class="font-display text-lg text-ink">Ratings</div>
-      <div class="text-muted text-sm">How your ratings are distributed</div>
+      <div class="text-muted text-sm">How your ratings are distributed &middot; click a column for the titles</div>
       {% if ratings.max %}
       {% with chart = ratings, unit = "movies", dimension = "Rating" %}
       {% include "./components/column_chart.html" %}
@@ -62,6 +62,8 @@ Ramsey &middot; Stats
       {% endif %}
     </div>
   </div>
+
+  <div id="drilldown"></div>
 
   {% if most_rewatched %}
   <div class="rounded-lg bg-surface border border-accent/20 p-5 mt-5 lg:max-w-md">

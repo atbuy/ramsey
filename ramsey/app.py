@@ -224,13 +224,19 @@ def stats_context() -> dict:
                 "tick": date.strftime("%b"),
                 "label": date.strftime("%b %Y"),
                 "count": counts[(year, month)],
+                "url": f"/stats/months/{year}/{month}",
             }
         )
 
     # How the given ratings are distributed
     histogram = Counter(ratings)
     rated = [
-        {"tick": rating, "label": f"Rated {rating}/10", "count": histogram[rating]}
+        {
+            "tick": rating,
+            "label": f"Rated {rating}/10",
+            "count": histogram[rating],
+            "url": f"/stats/rating/{rating}",
+        }
         for rating in range(1, 11)
     ]
 
@@ -292,6 +298,67 @@ async def stats(request: Request):
     """Show statistics about the watched movies."""
 
     return templates.TemplateResponse(request, "stats.html", stats_context())
+
+
+def render_drilldown(heading: str, movies: list[dict]) -> HTMLResponse:
+    """Render the list of titles behind a stats column."""
+
+    template = templates.get_template("components/stats_drilldown.html")
+    return HTMLResponse(template.render({"heading": heading, "movies": movies}))
+
+
+def titles(count: int) -> str:
+    return f"{count} title" if count == 1 else f"{count} titles"
+
+
+@app.get("/stats/months/{year}/{month}")
+async def stats_month(year: int, month: int):
+    """List the titles watched in a given month."""
+
+    if not 1 <= month <= 12:
+        raise HTTPException(400, "Invalid month")
+
+    start = datetime(year, month, 1)
+    end = datetime(year + 1, 1, 1) if month == 12 else datetime(year, month + 1, 1)
+
+    rows = []
+    for movie in db.get_movies():
+        dates = [
+            date
+            for date in movie["watch_dates"]
+            if start.timestamp() <= date < end.timestamp()
+        ]
+        if not dates:
+            continue
+
+        movie["detail"] = ", ".join(format_date(date) for date in dates)
+        movie["latest"] = max(dates)
+        rows.append(movie)
+
+    rows.sort(key=lambda movie: movie["latest"], reverse=True)
+
+    heading = f"Watched in {start.strftime('%B %Y')} · {titles(len(rows))}"
+    return render_drilldown(heading, rows)
+
+
+@app.get("/stats/rating/{rating}")
+async def stats_rating(rating: int):
+    """List the titles with a given rating."""
+
+    if not 1 <= rating <= 10:
+        raise HTTPException(400, "Rating must be between 1 and 10")
+
+    rows = []
+    for movie in db.get_movies():
+        if movie["rating"] != rating:
+            continue
+
+        parts = (movie["year"], movie["people"])
+        movie["detail"] = " · ".join(part for part in parts if part)
+        rows.append(movie)
+
+    heading = f"Rated {rating}/10 · {titles(len(rows))}"
+    return render_drilldown(heading, rows)
 
 
 def iso(timestamp: float) -> str:
