@@ -1,0 +1,94 @@
+{% extends "./base.html" %}
+
+{% block title %}
+Ramsey &middot; Stats
+{% endblock %}
+
+{% block body %}
+<main class="max-w-7xl mx-auto px-6 pb-16">
+  <div class="flex items-center gap-4 my-8">
+    <h1 class="font-display text-3xl text-accent tracking-wide">Stats</h1>
+    <div class="flex-1 border-t border-accent/30"></div>
+    <span class="text-accent/70 text-xl">&#9733;</span>
+  </div>
+
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+    <div class="rounded-lg bg-surface border border-accent/20 p-5">
+      <div class="text-muted text-sm">Movies watched</div>
+      <div class="text-ink font-semibold text-3xl mt-1">{{ watched_count }}</div>
+    </div>
+    <div class="rounded-lg bg-surface border border-accent/20 p-5">
+      <div class="text-muted text-sm">Total watches</div>
+      <div class="text-ink font-semibold text-3xl mt-1">{{ total_watches }}</div>
+    </div>
+    <div class="rounded-lg bg-surface border border-accent/20 p-5">
+      <div class="text-muted text-sm">Average rating</div>
+      <div class="text-ink font-semibold text-3xl mt-1">
+        {% if average_rating %}
+        {{ average_rating }}<span class="text-muted text-lg font-normal">/10 &middot; {{ rated_count }} rated</span>
+        {% else %}
+        &mdash;
+        {% endif %}
+      </div>
+    </div>
+    <div class="rounded-lg bg-surface border border-accent/20 p-5">
+      <div class="text-muted text-sm">On watchlist</div>
+      <div class="text-ink font-semibold text-3xl mt-1">{{ watchlist_count }}</div>
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-5 mt-5">
+    <div class="rounded-lg bg-surface border border-accent/20 p-5">
+      <div class="font-display text-lg text-ink">Watches per month</div>
+      <div class="text-muted text-sm">Last 12 months</div>
+      {% if months.max %}
+      {% with chart = months, unit = "watches", dimension = "Month" %}
+      {% include "./components/column_chart.html" %}
+      {% endwith %}
+      {% else %}
+      <div class="text-muted py-12 text-center">No watches in the last 12 months.</div>
+      {% endif %}
+    </div>
+
+    <div class="rounded-lg bg-surface border border-accent/20 p-5">
+      <div class="font-display text-lg text-ink">Ratings</div>
+      <div class="text-muted text-sm">How your ratings are distributed</div>
+      {% if ratings.max %}
+      {% with chart = ratings, unit = "movies", dimension = "Rating" %}
+      {% include "./components/column_chart.html" %}
+      {% endwith %}
+      {% else %}
+      <div class="text-muted py-12 text-center">No ratings yet.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if most_rewatched %}
+  <div class="rounded-lg bg-surface border border-accent/20 p-5 mt-5 lg:max-w-md">
+    <div class="font-display text-lg text-ink mb-3">Most rewatched</div>
+    <ul class="flex flex-col divide-y divide-accent/10">
+      {% for movie in most_rewatched %}
+      <li class="flex items-center gap-3 py-2">
+        <span class="text-muted text-sm w-4">{{ loop.index }}.</span>
+        <img src="{{ movie.image }}" alt="{{ movie.title }} poster" loading="lazy"
+          class="w-8 h-11 object-cover rounded shadow shrink-0" />
+        <span class="text-ink truncate flex-1">{{ movie.title }}</span>
+        <span class="text-muted text-sm shrink-0">&times;{{ movie.count }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="flex items-center gap-3 mt-8 text-sm">
+    <span class="text-muted">Export your library:</span>
+    <a href="/export/json"
+      class="border border-accent/40 text-accent rounded-md px-3 py-1 hover:bg-accent/20 transition">JSON</a>
+    <a href="/export/csv"
+      class="border border-accent/40 text-accent rounded-md px-3 py-1 hover:bg-accent/20 transition">CSV</a>
+  </div>
+
+  <!-- Search actions from the navbar swap their result here -->
+  <div id="library" class="hidden"></div>
+</main>
+{% endblock %}

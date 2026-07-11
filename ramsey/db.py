@@ -99,6 +99,15 @@ def get_watches(movie_id: str) -> list[sqlite3.Row]:
     return db.execute(query, (movie_id,)).fetchall()
 
 
+def get_watch_times() -> list[float]:
+    """Get the timestamps of all watch events."""
+
+    db = get_db()
+    rows = db.execute("SELECT watched_at FROM watches").fetchall()
+
+    return [row["watched_at"] for row in rows]
+
+
 def get_watch(watch_id: int) -> sqlite3.Row | None:
     """Get a single watch event."""
 

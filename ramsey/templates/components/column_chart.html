@@ -1,0 +1,50 @@
+<div class="relative mt-2">
+  <div class="relative">
+    <div class="absolute inset-x-0 top-0 border-t border-ink/5"></div>
+    <div class="absolute inset-x-0 top-1/2 border-t border-ink/5"></div>
+    <div class="relative flex items-end gap-[2px] h-40">
+      {% for item in chart["items"] %}
+      <div tabindex="0" aria-label="{{ item.label }}: {{ item.count }} {{ unit }}"
+        class="group relative flex-1 h-full flex flex-col justify-end items-center outline-none">
+        <div
+          class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition rounded-md border border-accent/30 bg-surface-deep px-2 py-1 text-xs whitespace-nowrap shadow-lg shadow-black/30">
+          <span class="text-ink font-semibold">{{ item.count }}</span>
+          <span class="text-muted">{{ item.label }}</span>
+        </div>
+        {% if item.count %}
+        {% if item.count == chart.max %}
+        <span class="text-muted text-xs mb-0.5">{{ item.count }}</span>
+        {% endif %}
+        <div class="w-full max-w-[24px] rounded-t bg-accent group-hover:opacity-80 transition"
+          style="height: {{ item.pct }}%"></div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="border-t border-muted/30"></div>
+  <div class="flex gap-[2px] mt-1">
+    {% for item in chart["items"] %}
+    <div class="flex-1 text-center text-muted text-[10px]">{{ item.tick }}</div>
+    {% endfor %}
+  </div>
+  <details class="mt-3 text-sm">
+    <summary class="text-muted cursor-pointer hover:text-ink transition">View data as table</summary>
+    <table class="mt-2 w-full text-left text-sm">
+      <thead>
+        <tr class="text-muted">
+          <th class="font-normal py-1">{{ dimension }}</th>
+          <th class="font-normal py-1">{{ unit | capitalize }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in chart["items"] %}
+        <tr class="border-t border-ink/5">
+          <td class="py-1 text-ink">{{ item.label }}</td>
+          <td class="py-1 text-ink tabular-nums">{{ item.count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </details>
+</div>

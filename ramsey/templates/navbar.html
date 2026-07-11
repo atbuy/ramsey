@@ -8,11 +8,14 @@
       class="hidden absolute left-0 right-0 top-full mt-2 z-50 rounded-lg border border-accent/30 bg-surface shadow-2xl shadow-black/70 p-2 max-h-[70vh] overflow-y-auto">
     </div>
   </div>
-  <select id="theme-picker" title="Theme"
-    class="ml-auto shrink-0 appearance-none bg-surface-deep text-muted border border-accent/40 rounded-md text-sm py-1.5 px-3 outline-none cursor-pointer hover:border-accent transition">
-    <option value="marquee">Marquee</option>
-    <option value="vhs">VHS '88</option>
-    <option value="noir">Noir</option>
-    <option value="chef">Chef's Table</option>
-  </select>
+  <div class="ml-auto flex items-center gap-5 shrink-0">
+    <a href="/stats" class="text-muted hover:text-accent transition">Stats</a>
+    <select id="theme-picker" title="Theme"
+      class="appearance-none bg-surface-deep text-muted border border-accent/40 rounded-md text-sm py-1.5 px-3 outline-none cursor-pointer hover:border-accent transition">
+      <option value="marquee">Marquee</option>
+      <option value="vhs">VHS '88</option>
+      <option value="noir">Noir</option>
+      <option value="chef">Chef's Table</option>
+    </select>
+  </div>
 </nav>
