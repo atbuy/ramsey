@@ -2,6 +2,7 @@ import csv
 import hashlib
 import io
 import json
+import random
 from collections import Counter
 from datetime import datetime
 from functools import lru_cache
@@ -134,7 +135,7 @@ def render_library(request: Request, oob: bool = False) -> str:
     return templates.get_template("components/library.html").render(context)
 
 
-def render_detail(movie_id: str) -> str:
+def render_detail(movie_id: str, pick: bool = False) -> str:
     """Render the detail view of a single movie."""
 
     movie = dict(db.get_movie(movie_id))
@@ -144,7 +145,7 @@ def render_detail(movie_id: str) -> str:
     ]
 
     return templates.get_template("components/movie_detail.html").render(
-        {"movie": movie}
+        {"movie": movie, "pick": pick}
     )
 
 
@@ -419,6 +420,25 @@ async def save_movie(request: Request, movie_id: str):
     db.add_watch(movie_id)
 
     return respond(request, movie_id)
+
+
+@app.get("/watchlist/pick")
+async def pick_from_watchlist(request: Request):
+    """Open a random movie from the watchlist, respecting the active filter."""
+
+    type_filter, _ = library_prefs(request)
+    candidates = [
+        movie
+        for movie in db.get_movies()
+        if not movie["watch_dates"] and matches_filter(movie, type_filter)
+    ]
+
+    if not candidates:
+        raise HTTPException(404, "The watchlist is empty")
+
+    choice = random.choice(candidates)
+
+    return HTMLResponse(render_detail(choice["id"], pick=True))
 
 
 @app.post("/watchlist/{movie_id}")

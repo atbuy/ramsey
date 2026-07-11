@@ -21,6 +21,18 @@
   {% if watchlist %}
   <div class="flex items-center gap-4 my-8">
     <h2 class="font-display text-3xl text-accent tracking-wide">Watchlist</h2>
+    <button hx-get="/watchlist/pick" hx-target="#modal" title="Pick a random movie from the watchlist"
+      class="flex items-center gap-2 rounded-full border border-accent/40 text-accent px-3 py-1 text-sm hover:bg-accent/20 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+        <rect x="2" y="2" width="20" height="20" rx="4" fill="none" stroke="currentColor" stroke-width="2" />
+        <circle cx="8" cy="8" r="1.8" />
+        <circle cx="16" cy="8" r="1.8" />
+        <circle cx="12" cy="12" r="1.8" />
+        <circle cx="8" cy="16" r="1.8" />
+        <circle cx="16" cy="16" r="1.8" />
+      </svg>
+      Pick for me
+    </button>
     <div class="flex-1 border-t border-accent/30"></div>
     <span class="text-accent/70 text-xl">&#9734;</span>
   </div>
