@@ -10,7 +10,8 @@ Movie critic application. Rate and keep track of what movies and shows you have 
 - Ratings (1-10 stars) and personal notes per title
 - Filter the library by movies/shows and sort by recency, rating, watch count, or title
 - Stats page: watches per month, rating distribution, and most rewatched titles
-- Export the whole library as JSON or CSV
+- Export the whole library as JSON or CSV, restore it from a JSON backup
+- Import your watching history from IMDB or Letterboxd CSV exports
 - Twelve selectable themes, dark and light &mdash; from Marquee to Giallo to Ticket Stub
 - Installable on the phone home screen as a PWA
 
@@ -75,7 +76,7 @@ make run
 # One-off import of watched movies from the old redis storage into sqlite
 python -m ramsey.migrate
 
-# Resolve the title type (movie/series/...) of movies saved before types were stored
+# Resolve missing title types, posters and people, e.g. after a CSV import
 python -m ramsey.backfill
 ```
 

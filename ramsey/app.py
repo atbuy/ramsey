@@ -12,8 +12,9 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from markupsafe import escape
 
-from ramsey import db
+from ramsey import db, importing
 from ramsey.cache import get_redis
 from ramsey.parsing import search_query
 from ramsey.settings import get_settings
@@ -306,6 +307,7 @@ def export_movies() -> list[dict]:
             {
                 "id": movie["id"],
                 "title": movie["title"],
+                "type": movie["type"],
                 "year": movie["year"],
                 "people": movie["people"],
                 "rating": movie["rating"],
@@ -350,6 +352,7 @@ async def export_csv():
     columns = [
         "id",
         "title",
+        "type",
         "year",
         "people",
         "rating",
@@ -367,6 +370,27 @@ async def export_csv():
         writer.writerow(movie[column] for column in columns)
 
     return export_response(buffer.getvalue(), "text/csv", "csv")
+
+
+@app.post("/import")
+async def import_library(request: Request):
+    """Import a Ramsey JSON export, or an IMDB / Letterboxd CSV."""
+
+    form = await request.form()
+    upload = form.get("file")
+    if upload is None or isinstance(upload, str):
+        raise HTTPException(400, "No file uploaded")
+
+    content = await upload.read()
+    try:
+        summary = importing.import_file(upload.filename or "", content)
+    except (ValueError, KeyError) as error:
+        raise HTTPException(400, f"Import failed: {error}") from error
+
+    response = HTMLResponse(f'<span class="text-muted">{escape(summary)}</span>')
+    response.headers["HX-Trigger"] = json.dumps({"ramsey:toast": summary})
+
+    return response
 
 
 @app.get("/search")

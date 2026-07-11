@@ -88,6 +88,25 @@ Ramsey &middot; Stats
       class="border border-accent/40 text-accent rounded-md px-3 py-1 hover:bg-accent/20 transition">CSV</a>
   </div>
 
+  <div class="flex flex-wrap items-center gap-3 mt-4 text-sm">
+    <span class="text-muted">Import:</span>
+    <form hx-post="/import" hx-encoding="multipart/form-data" hx-target="#import-result"
+      class="flex flex-wrap items-center gap-3">
+      <input type="file" name="file" required accept=".json,.csv"
+        class="text-muted file:mr-2 file:rounded-md file:border file:border-accent/40 file:bg-transparent file:text-accent file:px-3 file:py-1 file:cursor-pointer" />
+      <button class="border border-accent/40 text-accent rounded-md px-3 py-1 hover:bg-accent/20 transition">
+        Import
+      </button>
+    </form>
+    <span id="import-result"></span>
+  </div>
+  <p class="text-muted/70 text-xs mt-2 max-w-2xl">
+    Accepts a Ramsey JSON export, an IMDB ratings or watchlist CSV, or Letterboxd CSVs
+    (diary.csv carries the most history; watchlist exports are recognized by the file name).
+    After importing from a CSV, run <code>python -m ramsey.backfill</code> to resolve
+    missing posters, people and title types.
+  </p>
+
   <!-- Search actions from the navbar swap their result here -->
   <div id="library" class="hidden"></div>
 </main>

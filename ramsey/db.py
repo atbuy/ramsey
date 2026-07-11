@@ -59,7 +59,7 @@ def get_movie(movie_id: str) -> sqlite3.Row | None:
     return db.execute(query, (movie_id,)).fetchone()
 
 
-def insert_movie(movie: MovieData) -> None:
+def insert_movie(movie: MovieData, added_at: float | None = None) -> None:
     """Store a new movie."""
 
     db = get_db()
@@ -74,11 +74,19 @@ def insert_movie(movie: MovieData) -> None:
         movie["year"],
         movie["people"],
         movie["image"],
-        time.time(),
+        added_at or time.time(),
     )
 
     db.execute(query, values)
     db.commit()
+
+
+def has_watch(movie_id: str, watched_at: float) -> bool:
+    """Check whether a watch at the exact same time already exists."""
+
+    db = get_db()
+    query = "SELECT 1 FROM watches WHERE movie_id = ? AND watched_at = ?"
+    return db.execute(query, (movie_id, watched_at)).fetchone() is not None
 
 
 def add_watch(movie_id: str, watched_at: float | None = None) -> None:
