@@ -8,7 +8,8 @@ Letterboxd CSVs. Titles with an IMDB ID are matched exactly; others
 Usage: python -m ramsey.backfill
 """
 
-from ramsey.db import get_db
+from ramsey import posters
+from ramsey.db import get_db, get_posterless_ids
 from ramsey.parsing import MovieData, search_query
 
 PLACEHOLDER_IMAGE = "/static/images/no_image.webp"
@@ -57,6 +58,11 @@ def main() -> None:
 
     db.commit()
     print(f"Backfilled {updated} of {len(rows)} movies with missing data.")
+
+    # Download posters that are not stored locally yet
+    missing = get_posterless_ids()
+    fetched = sum(1 for movie_id in missing if posters.fetch(movie_id))
+    print(f"Downloaded {fetched} of {len(missing)} missing posters.")
 
 
 if __name__ == "__main__":

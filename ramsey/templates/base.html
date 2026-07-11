@@ -198,9 +198,14 @@
         --page-background: radial-gradient(1200px 600px at 50% -150px, #fbf4e4, #eadfc6 70%);
       }
 
-      body {
+      /* The gradient lives on a fixed pseudo-element instead of a fixed
+         body background, which would force repaints while scrolling */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
         background: var(--page-background);
-        background-attachment: fixed;
       }
 
       @media (prefers-reduced-motion: reduce) {

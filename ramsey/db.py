@@ -24,7 +24,16 @@ CREATE TABLE IF NOT EXISTS watches (
     movie_id TEXT NOT NULL REFERENCES movies (id) ON DELETE CASCADE,
     watched_at REAL NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS posters (
+    movie_id TEXT PRIMARY KEY REFERENCES movies (id) ON DELETE CASCADE,
+    content BLOB NOT NULL,
+    content_type TEXT NOT NULL DEFAULT 'image/jpeg'
+);
 """
+
+# Movie queries select this flag so templates know a local poster exists
+HAS_POSTER = "EXISTS (SELECT 1 FROM posters WHERE movie_id = movies.id) AS has_poster"
 
 
 @lru_cache(maxsize=1)
@@ -55,7 +64,7 @@ def get_movie(movie_id: str) -> sqlite3.Row | None:
     """Get a single stored movie by its identifier."""
 
     db = get_db()
-    query = "SELECT * FROM movies WHERE id = ?"
+    query = f"SELECT *, {HAS_POSTER} FROM movies WHERE id = ?"
     return db.execute(query, (movie_id,)).fetchone()
 
 
@@ -177,6 +186,37 @@ def delete_movie(movie_id: str) -> None:
     db.commit()
 
 
+def get_poster(movie_id: str) -> sqlite3.Row | None:
+    """Get the locally stored poster of a movie."""
+
+    db = get_db()
+    query = "SELECT content, content_type FROM posters WHERE movie_id = ?"
+    return db.execute(query, (movie_id,)).fetchone()
+
+
+def set_poster(movie_id: str, content: bytes, content_type: str) -> None:
+    """Store or replace the poster of a movie."""
+
+    db = get_db()
+    query = (
+        "INSERT INTO posters (movie_id, content, content_type) VALUES (?, ?, ?) "
+        "ON CONFLICT (movie_id) DO UPDATE SET content = ?, content_type = ?"
+    )
+    db.execute(query, (movie_id, content, content_type, content, content_type))
+    db.commit()
+
+
+def get_posterless_ids() -> list[str]:
+    """Get the identifiers of movies without a locally stored poster."""
+
+    db = get_db()
+    query = (
+        "SELECT id FROM movies "
+        "WHERE NOT EXISTS (SELECT 1 FROM posters WHERE movie_id = movies.id)"
+    )
+    return [row["id"] for row in db.execute(query).fetchall()]
+
+
 def get_saved_ids() -> set[str]:
     """Get the identifiers of all stored movies."""
 
@@ -199,7 +239,7 @@ def get_movies() -> list[dict]:
     """Get all movies with their watch dates, most recently watched first."""
 
     db = get_db()
-    movies = db.execute("SELECT * FROM movies").fetchall()
+    movies = db.execute(f"SELECT *, {HAS_POSTER} FROM movies").fetchall()
     watches = db.execute(
         "SELECT movie_id, watched_at FROM watches ORDER BY watched_at, id"
     ).fetchall()

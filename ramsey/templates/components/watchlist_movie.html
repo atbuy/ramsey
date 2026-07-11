@@ -1,7 +1,7 @@
 <div data-title="{{ movie.title | lower }}" style="view-transition-name: movie-{{ movie.id }}"
   class="flex flex-col rounded-lg overflow-hidden bg-surface border border-accent/20 shadow-lg shadow-black/40 hover:border-accent/50 transition">
   <div class="relative cursor-pointer" hx-get="/movies/{{ movie.id }}" hx-target="#modal">
-    <img src="{{ movie.image }}" alt="{{ movie.title }} poster" loading="lazy"
+    <img src="{{ poster_src(movie) }}" alt="{{ movie.title }} poster" loading="lazy" decoding="async"
       class="w-full aspect-[2/3] object-cover" />
     {% set label = kind(movie.type) %}
     {% if label %}

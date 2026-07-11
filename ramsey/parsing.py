@@ -25,7 +25,7 @@ def search_query(query: str) -> list[MovieData]:
     url = f"{settings.query_url}{term[0]}/{quote(term)}.json"
     headers = {"User-Agent": settings.user_agent}
 
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=10)
     if response.status_code != 200:
         print(f"Search failed with status {response.status_code}.")
         return []

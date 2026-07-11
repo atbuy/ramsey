@@ -76,7 +76,8 @@ make run
 # One-off import of watched movies from the old redis storage into sqlite
 python -m ramsey.migrate
 
-# Resolve missing title types, posters and people, e.g. after a CSV import
+# Resolve missing title types and people, and download posters into the
+# local database, e.g. after an upgrade or a CSV import
 python -m ramsey.backfill
 ```
 

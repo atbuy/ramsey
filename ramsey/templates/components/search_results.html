@@ -2,7 +2,7 @@
 <div class="flex flex-col divide-y divide-accent/10">
   {% for movie in results %}
   <div class="search-row flex items-center gap-3 py-2.5 px-2 rounded-md hover:bg-accent/10">
-    <img src="{{ movie.image }}" alt="{{ movie.title }} poster" loading="lazy"
+    <img src="{{ poster_src(movie, 100) }}" alt="{{ movie.title }} poster" loading="lazy" decoding="async"
       class="w-10 h-14 object-cover rounded shadow shrink-0" />
     <div class="flex flex-col min-w-0 flex-1">
       <span class="font-display text-ink truncate">{{ movie.title }}</span>

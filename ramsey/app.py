@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from markupsafe import escape
 
-from ramsey import db, importing
+from ramsey import db, importing, posters
 from ramsey.cache import get_redis
 from ramsey.parsing import search_query
 from ramsey.settings import get_settings
@@ -42,6 +42,22 @@ def static_url(path: str) -> str:
 
 
 templates.env.globals["static_url"] = static_url
+
+
+poster = posters.resize_url
+templates.env.globals["poster"] = poster
+
+
+def poster_src(movie, width: int = 500) -> str:
+    """Get the local poster of a movie, or the resized remote as fallback."""
+
+    if movie.get("has_poster"):
+        return f"/posters/{movie['id']}"
+
+    return poster(movie["image"], width)
+
+
+templates.env.globals["poster_src"] = poster_src
 
 # Human labels for the title types of the suggestion API
 TYPE_LABELS = {
@@ -266,6 +282,7 @@ def stats_context() -> dict:
                 "id": movie["id"],
                 "title": movie["title"],
                 "image": movie["image"],
+                "has_poster": movie["has_poster"],
                 "count": len(movie["watch_dates"]),
             }
             for movie in rewatched[:3]
@@ -509,6 +526,22 @@ def save_from_search(movie_id: str) -> None:
         raise HTTPException(404, "Movie not found in recent search results")
 
     db.insert_movie(json.loads(cached))
+    posters.fetch(movie_id)
+
+
+@app.get("/posters/{movie_id}")
+async def poster_image(movie_id: str):
+    """Serve the locally stored poster of a movie."""
+
+    row = db.get_poster(movie_id)
+    if row is None:
+        raise HTTPException(404, "No poster stored")
+
+    return Response(
+        row["content"],
+        media_type=row["content_type"],
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
 
 
 @app.get("/movies/{movie_id}")
