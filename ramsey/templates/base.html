@@ -202,6 +202,14 @@
         background: var(--page-background);
         background-attachment: fixed;
       }
+
+      @media (prefers-reduced-motion: reduce) {
+        ::view-transition-group(*),
+        ::view-transition-old(*),
+        ::view-transition-new(*) {
+          animation: none !important;
+        }
+      }
     </style>
 
     <!-- TailwindCSS  -->
@@ -229,7 +237,8 @@
       };
     </script>
 
-    <!-- HTMX -->
+    <!-- HTMX, with view transitions on every swap where the browser supports them -->
+    <meta name="htmx-config" content='{"globalViewTransitions": true}'>
     <script src="https://unpkg.com/htmx.org@2.0.3"></script>
 
     {% block head %}
