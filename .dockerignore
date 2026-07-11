@@ -1,0 +1,24 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*.egg-info
+.venv
+.python-version
+build
+dist
+
+# Local data and configuration
+*.db
+.env*
+
+# Tooling not needed inside the image
+.pre-commit-config.yaml
+.dockerignore
+Dockerfile
+compose.yml
+Makefile
+uv.lock
